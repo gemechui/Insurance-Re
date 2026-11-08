@@ -1,0 +1,1855 @@
+<!doctype html>
+<html lang="en" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Ethiopian Insurance Corporation — track policy renewals across all branches, districts and products. Works offline.">
+<meta name="theme-color" content="#1F3B8C" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E131F" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="light dark">
+<title>Ethiopian Insurance Corporation</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="EIC">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="Ethiopian Insurance Corporation">
+<meta name="format-detection" content="telephone=no">
+<link rel="stylesheet" href="./fonts.css">
+<style>
+/* ===================== Theme tokens ===================== */
+:root{
+  --bg:#F3F5F9; --surface:#FFFFFF; --surface2:#EBEEF4; --line:#D8DDE7; --line-soft:#E7EBF2;
+  --fg:#161C2B; --muted:#5C6577; --muted-2:#8A93A6;
+  --accent:#1F3B8C; --accent-2:#3461CA; --accent-fg:#FFFFFF; --accent-soft:#E6ECF8; --accent-line:#C9D5F0;
+  --good:#157F4F; --good-soft:#DCF0E4; --warn:#8F5B00; --warn-soft:#FAEBC9; --bad:#B0302A; --bad-soft:#FADFDC;
+  --shadow:0 1px 2px rgba(20,30,60,.04), 0 12px 36px rgba(20,30,60,.12);
+  --shadow-pop:0 12px 44px rgba(20,30,60,.20);
+  --radius:10px; --radius-sm:6px;
+  --f-display:'Bricolage Grotesque','Noto Sans Ethiopic',system-ui,sans-serif;
+  --f-body:'IBM Plex Sans','Noto Sans Ethiopic',system-ui,sans-serif;
+  --f-mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0E131F; --surface:#161D2E; --surface2:#202A41; --line:#2C3754; --line-soft:#232C46;
+  --fg:#E6EAF3; --muted:#A6B1C8; --muted-2:#7B86A0;
+  --accent:#8AA2F2; --accent-2:#5E78D8; --accent-fg:#0E131F; --accent-soft:#222E58; --accent-line:#3A4A78;
+  --good:#5EC795; --good-soft:#173A2B; --warn:#E5B04F; --warn-soft:#3A2D11; --bad:#F28C84; --bad-soft:#431F1C;
+  --shadow:0 12px 36px rgba(0,0,0,.45); --shadow-pop:0 18px 56px rgba(0,0,0,.55); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E131F; --surface:#161D2E; --surface2:#202A41; --line:#2C3754; --line-soft:#232C46;
+  --fg:#E6EAF3; --muted:#A6B1C8; --muted-2:#7B86A0;
+  --accent:#8AA2F2; --accent-2:#5E78D8; --accent-fg:#0E131F; --accent-soft:#222E58; --accent-line:#3A4A78;
+  --good:#5EC795; --good-soft:#173A2B; --warn:#E5B04F; --warn-soft:#3A2D11; --bad:#F28C84; --bad-soft:#431F1C;
+  --shadow:0 12px 36px rgba(0,0,0,.45); --shadow-pop:0 18px 56px rgba(0,0,0,.55); color-scheme:dark}
+
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;padding:0;background:var(--bg);color:var(--fg);
+  font:14px/1.55 var(--f-body);
+  padding-block:0;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;letter-spacing:-.01em;font-weight:600}
+h1{font-size:24px;line-height:1.2}
+h2{font-size:16px;line-height:1.3}
+h3{font-size:14px;line-height:1.3;font-weight:600;color:var(--muted)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:none;color:inherit;padding:0}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.mono{font-family:var(--f-mono);font-size:12.5px}
+.num{font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+[hidden]{display:none!important}
+hr{border:0;border-top:1px solid var(--line);width:100%}
+
+/* ===================== Layout ===================== */
+.app{display:grid;grid-template-columns:224px minmax(0,1fr);gap:28px;max-width:1520px;margin:0 auto;padding:24px max(20px,env(safe-area-inset-right,0px)) 48px max(20px,env(safe-area-inset-left,0px))}
+.rail{position:sticky;top:24px;align-self:start;display:flex;flex-direction:column;gap:18px;max-height:calc(100vh - 48px)}
+.brand{display:flex;gap:12px;align-items:center;padding:4px 4px 12px;border-bottom:1px solid var(--line)}
+.brand .brand-logo{width:40px;height:40px;border-radius:50%;object-fit:cover;flex:0 0 auto;box-shadow:var(--shadow);background:#fff;border:1px solid var(--line)}
+.brand b{display:block;font:600 14px var(--f-display);line-height:1.25}
+.brand span{display:block;font-size:11.5px;color:var(--muted);line-height:1.35}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav a{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 11px;border-radius:8px;color:var(--muted);text-decoration:none;font-size:13.5px;font-weight:500;transition:background .12s,color .12s}
+.nav a:hover{background:var(--surface);color:var(--fg)}
+.nav a[aria-current="page"]{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.nav a[aria-current="page"] .badge{background:var(--accent);color:var(--accent-fg)}
+.nav .badge{background:var(--bad);color:#fff;font:600 11px var(--f-body);padding:1px 7px;border-radius:99px;min-width:20px;text-align:center;line-height:1.5}
+.rail-foot{margin-top:auto;padding-top:14px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px;font-size:12px;color:var(--muted)}
+.rail-foot .row{align-items:center;justify-content:space-between}
+.rail-foot button{padding:6px 9px;border-radius:6px;font-size:12px;color:var(--muted)}
+.rail-foot button:hover{background:var(--surface);color:var(--fg)}
+
+.main{min-width:0}
+.top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+.top h1{margin:0}
+.top .ctl{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.top .who{display:flex;align-items:center;gap:8px;font-size:13px}
+.pill{display:inline-flex;align-items:center;padding:2px 9px;border-radius:99px;font:500 11.5px var(--f-body);background:var(--surface2);color:var(--muted);border:1px solid var(--line)}
+.pill.accent{background:var(--accent-soft);color:var(--accent);border-color:var(--accent-line)}
+.pill.good{background:var(--good-soft);color:var(--good);border-color:transparent}
+.pill.bad{background:var(--bad-soft);color:var(--bad);border-color:transparent}
+.pill.warn{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+
+label.f{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--muted);font-weight:500}
+label.f>span{font-size:11.5px;letter-spacing:.01em}
+input,select,textarea{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:7px 10px;color:var(--fg);min-width:0;width:100%;transition:border-color .12s,box-shadow .12s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+input[type="search"]{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235C6577' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='11' cy='11' r='7'/><path d='m21 21-4.3-4.3'/></svg>");background-repeat:no-repeat;background-position:9px center;padding-left:32px}
+select{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235C6577' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");background-repeat:no-repeat;background-position:right 9px center;padding-right:30px}
+textarea{resize:vertical;min-height:60px;font-family:inherit}
+input:disabled,select:disabled,textarea:disabled{background:var(--surface2);color:var(--muted-2);cursor:not-allowed}
+
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:500 13px var(--f-body);transition:background .12s,border-color .12s,transform .04s;white-space:nowrap}
+.btn:hover{background:var(--surface2);border-color:var(--accent-line)}
+.btn:active{transform:translateY(.5px)}
+.btn.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);box-shadow:0 1px 2px rgba(20,30,60,.08)}
+.btn.primary:hover{background:var(--accent-2);border-color:var(--accent-2)}
+.btn.sm{padding:5px 10px;font-size:12.5px;border-radius:6px}
+.btn.danger{color:var(--bad);border-color:var(--line)}
+.btn.danger:hover{background:var(--bad-soft);border-color:var(--bad)}
+.btn.warn-outline{color:var(--warn);border-color:var(--line)}
+.btn.warn-outline:hover{background:var(--warn-soft);border-color:var(--warn)}
+.btn[disabled]{opacity:.55;cursor:not-allowed;transform:none}
+.btn.primary[disabled]:hover{background:var(--accent)}
+
+/* ===================== Panels, KPIs, tables ===================== */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+.panel>h2{margin-bottom:4px}
+.panel>.sub{color:var(--muted);font-size:12.5px;margin-bottom:14px}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+.kpi{padding:16px 18px;border-left:1px solid var(--line);display:flex;flex-direction:column;gap:4px}
+.kpi:first-child{border-left:0}
+.kpi .l{font:500 11px var(--f-body);color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.kpi .v{font:600 26px var(--f-display);letter-spacing:-.02em;line-height:1.1}
+.kpi .d{font-size:12px;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--muted);margin:10px 0 4px}
+.legend span{display:inline-flex;gap:6px;align-items:center}
+.legend i{width:10px;height:10px;border-radius:2px;display:inline-block;background:var(--line)}
+.sub{color:var(--muted);font-size:12.5px;line-height:1.5}
+
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line-soft);vertical-align:middle}
+th{font:600 11.5px var(--f-body);color:var(--muted);text-transform:uppercase;letter-spacing:.03em;border-bottom:1px solid var(--line);background:transparent;position:sticky;top:0;background:var(--surface)}
+td.r,th.r{text-align:right}
+.tablewrap{overflow:auto;max-height:560px;border-radius:8px}
+tbody tr{transition:background .08s}
+tbody tr:hover{background:var(--surface2)}
+tr.click{cursor:pointer}
+tr.click{transition:background .08s}
+tr.click:hover{background:var(--accent-soft)}
+tr.click.selected{background:var(--accent-line);box-shadow:inset 3px 0 0 var(--accent);font-weight:500}
+tr.click.selected:hover{background:var(--accent);color:var(--accent-fg)}
+tr.click.selected:hover .mono,tr.click.selected:hover .muted{color:var(--accent-fg)}
+input[type="checkbox"]{accent-color:var(--accent);width:14px;height:14px;cursor:pointer}
+td .nm{font-weight:500;line-height:1.3}
+
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.bar label.f{flex:1 1 200px;min-width:160px}
+.bar label.f.grow{flex:1 1 320px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+.seg button{padding:6px 12px;font-size:12.5px;font-weight:500;color:var(--muted)}
+.seg button:hover{background:var(--surface2)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg)}
+.tier{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px}
+.tier button{padding:12px 14px;border-radius:10px;background:var(--surface);border:1px solid var(--line);display:flex;flex-direction:column;gap:5px;align-items:flex-start;text-align:left;transition:background .12s,border-color .12s}
+.tier button:hover{background:var(--surface2);border-color:var(--accent-line)}
+.tier button[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.tier .stripe{width:32px;height:3px;border-radius:2px;background:var(--line)}
+.tier .stripe.bad{background:var(--bad)} .tier .stripe.warn{background:var(--warn)}
+.tier .c{font:600 18px var(--f-display);line-height:1.1}
+.tier .l{font-size:11.5px;color:var(--muted)}
+
+/* ===================== Drawer / sheet ===================== */
+.drawer{position:fixed;inset:0;display:flex;justify-content:flex-end;background:rgba(10,15,30,.45);z-index:30;animation:fade .14s ease-out}
+.drawer[hidden]{display:none}
+.sheet{width:min(540px,100%);height:100%;overflow-y:auto;background:var(--surface);box-shadow:var(--shadow-pop);padding:20px max(20px,env(safe-area-inset-right,0px)) 28px 20px;display:flex;flex-direction:column;gap:14px;animation:slide .18s ease-out}
+.sheet h2{font-size:20px;overflow-wrap:anywhere}
+.sheet h3{font-size:14px;font-weight:600;color:var(--fg)}
+dl.facts{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:6px 14px;margin:0;font-size:13px}
+dl.facts dt{color:var(--muted);font-weight:500}
+dl.facts dd{margin:0;overflow-wrap:anywhere}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.formgrid .full{grid-column:1/-1}
+.err{color:var(--bad);font-size:12.5px;min-height:18px}
+
+/* ===================== Misc ===================== */
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:8px;font-weight:500;z-index:50;max-width:90vw;box-shadow:var(--shadow-pop)}
+.toast[hidden]{display:none}
+.toast a{color:inherit;text-decoration:underline;font-weight:600;cursor:pointer;margin-left:8px}
+
+/* PWA: install button, network status dot, update banner */
+#installBtn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--accent-line);border-radius:8px;background:var(--accent-soft);color:var(--accent);font:500 12.5px var(--f-body);cursor:pointer;width:100%;justify-content:center}
+#installBtn:hover{background:var(--accent-line)}
+.net-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--good);flex:0 0 auto;transition:background .2s}
+.net-dot.offline{background:var(--bad)}
+.net-dot.uncached{background:var(--warn)}
+.update-banner{position:fixed;left:50%;bottom:calc(60px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--accent);color:var(--accent-fg);padding:10px 16px;border-radius:8px;font-weight:500;z-index:50;max-width:90vw;box-shadow:var(--shadow-pop);display:flex;align-items:center;gap:10px}
+.update-banner[hidden]{display:none}
+.update-banner button{background:rgba(255,255,255,.18);color:var(--accent-fg);border:1px solid rgba(255,255,255,.3);padding:5px 12px;border-radius:6px;font:600 12.5px var(--f-body)}
+.note{border:1px solid var(--line);border-left:3px solid var(--accent);background:var(--surface);border-radius:8px;padding:11px 14px;font-size:13px}
+.note.warn{border-left-color:var(--warn)} .note.bad{border-left-color:var(--bad)} .note.good{border-left-color:var(--good)}
+.note b{font-weight:600}
+.empty{padding:40px 16px;text-align:center;color:var(--muted)}
+.empty b{display:block;color:var(--fg);font:600 16px var(--f-display);margin-bottom:6px}
+.cols2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.stack{display:flex;flex-direction:column;gap:14px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chk{display:inline-flex;gap:5px;align-items:center;padding:3px 9px;border:1px solid var(--line);border-radius:99px;font-size:12px;background:var(--surface);cursor:pointer}
+.chk:hover{border-color:var(--accent-line)}
+.digest{width:100%;min-height:240px;font:12.5px/1.55 var(--f-mono);resize:vertical}
+.prog{height:6px;background:var(--surface2);border-radius:3px;overflow:hidden}
+.prog>div{height:100%;background:var(--accent);width:0;transition:width .12s ease}
+.hbar{height:8px;background:var(--surface2);border-radius:2px;min-width:60px;overflow:hidden}
+.hbar>div{height:100%;background:var(--good);border-radius:2px}
+ul.clean{margin:0;padding-left:18px}
+ul.clean li{margin-bottom:4px}
+svg .grid{stroke:var(--line);stroke-width:1}
+svg text{fill:var(--muted);font:11px var(--f-body)}
+svg text.cur{fill:var(--accent);font-weight:600}
+
+/* Add-policy form */
+.addgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.addgrid .full{grid-column:1/-1}
+.addgrid label.f>span{font-size:11.5px}
+.req::after{content:"*";color:var(--bad);margin-left:2px}
+
+/* Helpers for in-line grid overrides that should still collapse at small widths */
+.cols2.ratio-3-2{grid-template-columns:minmax(0,3fr) minmax(0,2fr)}
+@media (max-width:1080px){.cols2.ratio-3-2{grid-template-columns:minmax(0,1fr)}}
+
+/* Mobile nav: subtle right-edge fade to signal there's more to scroll */
+@media (max-width:820px){
+  .nav{position:relative;-webkit-mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 24px),transparent 100%);mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 24px),transparent 100%)}
+  /* On mobile, anchor the toast higher (above the bottom of the page) so it doesn't overlap
+     the bottom drawer buttons or the table header. */
+  .toast{bottom:auto;top:calc(12px + env(safe-area-inset-top,0px));max-width:calc(100vw - 24px)}
+  .update-banner{bottom:auto;top:calc(12px + env(safe-area-inset-top,0px));max-width:calc(100vw - 24px)}
+}
+
+/* Validation grid */
+.vgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.vcard{padding:14px;background:var(--surface2);border-radius:8px;border:1px solid var(--line)}
+.vcard.ok{border-left:3px solid var(--good)} .vcard.warn{border-left:3px solid var(--warn)} .vcard.bad{border-left:3px solid var(--bad)}
+.vcard .l{font:500 11px var(--f-body);color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.vcard .v{font:600 22px var(--f-display);margin-top:2px}
+.vcard .d{font-size:12px;color:var(--muted);margin-top:2px}
+
+/* ===================== Animations ===================== */
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes slide{from{transform:translateX(20px);opacity:.5}to{transform:translateX(0);opacity:1}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ===================== Responsive ===================== */
+@media (max-width:1080px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.kpi:nth-child(n+3){border-top:1px solid var(--line)}.kpi:nth-child(3){border-left:0}.grid2,.cols2{grid-template-columns:minmax(0,1fr)}.tier{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:820px){
+  .app{grid-template-columns:minmax(0,1fr);gap:14px;padding:16px max(14px,env(safe-area-inset-right,0px)) 32px max(14px,env(safe-area-inset-left,0px))}
+  .rail{position:static;max-height:none}
+  .nav{flex-direction:row;overflow-x:auto;gap:4px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+  .nav a{white-space:nowrap;padding:7px 11px;font-size:13px}
+  .nav a[aria-current="page"]{box-shadow:0 2px 0 var(--accent) inset,0 0 0 1px var(--accent-line) inset;background:transparent;color:var(--accent)}
+  .top h1{font-size:22px}
+  .formgrid{grid-template-columns:1fr}
+  .addgrid{grid-template-columns:1fr}
+  .tier{grid-template-columns:repeat(2,1fr)}
+  .bar label.f{flex:1 1 140px}.bar .grow{flex:1 1 100%}
+}
+
+/* ===================== Print ===================== */
+/* Print-only report header — appears at the top of every printed PDF, hidden on screen */
+.print-header{display:none}
+@media print{
+  body{background:#fff;color:#000;font-size:11px;padding:0}
+  .rail,.drawer,.toast,.rail-foot,.update-banner,#pdfBtn{display:none!important}
+  .app{display:block;padding:0;max-width:none}
+  .main{display:block}
+  .panel{box-shadow:none;border:1px solid #ccc;break-inside:avoid}
+  .kpis{grid-template-columns:repeat(4,1fr);border:1px solid #ccc}
+  .kpi .v{font-size:18px}
+  th,td{padding:6px 8px;border:1px solid #ddd}
+  .grid2,.cols2{grid-template-columns:1fr 1fr}
+
+  /* Show the report header at the top of every printed page */
+  .print-header{display:flex;align-items:flex-start;gap:14px;padding:0 0 14px;border-bottom:2px solid #1F3B8C;margin-bottom:18px;break-inside:avoid;break-after:avoid}
+  .print-header .print-logo{width:64px;height:64px;border-radius:50%;object-fit:cover;border:1px solid #1F3B8C;background:#fff}
+  .print-header .print-brand{flex:1 1 auto}
+  .print-header .print-org{font:700 16px 'Bricolage Grotesque','IBM Plex Sans',serif;color:#1F3B8C;line-height:1.2}
+  .print-header .print-report{font:600 13px 'IBM Plex Sans',sans-serif;color:#000;margin-top:3px;line-height:1.3}
+  .print-header .print-meta{font:11px 'IBM Plex Mono',monospace;color:#444;text-align:right;line-height:1.5}
+  .print-header .print-meta div{white-space:nowrap}
+
+  /* Hide the on-screen header on print */
+  .top,#title{display:none!important}
+
+  /* Keep table headers from breaking away from rows + allow tables to paginate */
+  thead{display:table-header-group}
+  tbody{break-inside:auto}
+  tr{break-inside:avoid;break-after:auto}
+  .tablewrap{max-height:none!important;overflow:visible!important}
+
+  /* Page footer with date + page number — @page margin content. Chromium-based
+     browsers populate counter(page)/counter(pages) correctly both via window.print()
+     and via programmatic page.pdf(). */
+  @page{margin:18mm 12mm 18mm}
+  @page {
+    @bottom-center {
+      content: "Ethiopian Insurance Corporation · Page " counter(page) " of " counter(pages);
+      font: 10px 'IBM Plex Mono', monospace;
+      color: #666;
+    }
+  }
+}
+
+/* Tighten the Reports table padding/font for print so all 8 columns fit on A4 portrait */
+@media print{
+  .main[data-view="reports"] table{font-size:10px;border-collapse:collapse}
+  .main[data-view="reports"] th,.main[data-view="reports"] td{padding:4px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="rail">
+    <div class="brand">
+      <img src="icons/eic-logo.png" alt="Ethiopian Insurance Corporation logo" class="brand-logo" width="40" height="40">
+      <div>
+        <b data-i18n="brand.title">Ethiopian Insurance Corporation</b>
+        <span data-i18n="brand.sub">Policy renewals, tracked together</span>
+      </div>
+    </div>
+    <nav class="nav" id="nav" aria-label="Sections"></nav>
+    <div class="rail-foot">
+      <div class="row">
+        <button id="langToggle" title="Switch language / ቋንቋ ቀይር" aria-label="Switch language">
+          <span id="langLabel">EN · አማ</span>
+        </button>
+        <button id="themeToggle" title="Switch theme" aria-label="Switch theme">
+          <span id="themeLabel">☾</span>
+        </button>
+      </div>
+      <button id="installBtn" hidden class="btn sm" style="justify-content:center;border-color:var(--accent-line);color:var(--accent)">
+        ⤓ <span data-i18n="pwa.install">Install app</span>
+      </button>
+      <div class="muted" style="font-size:11px;display:flex;align-items:center;gap:6px">
+        <span id="netStatus" class="net-dot" title="Online"></span>
+        <span>v3.0 · Offline-ready</span>
+      </div>
+    </div>
+  </aside>
+  <main class="main">
+    <header class="top">
+      <h1 id="title">Dashboard</h1>
+      <div class="ctl">
+        <label class="f" style="flex-direction:row;align-items:center;gap:8px">
+          <span data-i18n="scope.district">District</span>
+          <select id="scope" aria-label="District"></select>
+        </label>
+        <button class="btn sm" id="pdfBtn" title="Save current view as PDF">
+          <span data-i18n="pdf.export">Export to PDF</span>
+        </button>
+        <div class="who" id="who"></div>
+      </div>
+    </header>
+    <!-- Print-only header — appears at the top of every printed PDF -->
+    <div class="print-header" id="printHeader" aria-hidden="true">
+      <img src="icons/eic-logo.png" alt="EIC logo" class="print-logo">
+      <div class="print-brand">
+        <div class="print-org" data-i18n="brand.title">Ethiopian Insurance Corporation</div>
+        <div class="print-report" id="printReportName">Dashboard</div>
+      </div>
+      <div class="print-meta">
+        <div id="printScope">All districts</div>
+        <div id="printDate"></div>
+      </div>
+    </div>
+    <div id="banner"></div>
+    <section id="view" aria-live="polite"></section>
+  </main>
+</div>
+<div class="drawer" id="drawer" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Policy details"></div></div>
+<div class="toast" id="toast" hidden></div>
+<div class="update-banner" id="updateBanner" hidden>
+  <span id="updateBannerText" data-i18n="pwa.update">A new version is available</span>
+  <button id="updateBtn" data-i18n="pwa.reload">Reload</button>
+</div>
+
+<script src="./vendor/xlsx.full.min.js"></script>
+<script>
+(()=>{
+'use strict';
+
+/* ===================== i18n ===================== */
+const I18N={
+  en:{
+    'brand.title':'Ethiopian Insurance Corporation',
+    'brand.sub':'Policy renewals, tracked together',
+    'pwa.install':'Install app','pwa.update':'A new version is available','pwa.reload':'Reload','pwa.offline':'You are offline — the app still works','pwa.online':'Back online','pwa.installed':'App installed','pwa.ios_hint':'Add to Home Screen: tap Share → Add to Home Screen',
+    'pdf.export':'Export to PDF','pdf.preparing':'Preparing PDF…','pdf.opened':'Print dialog opened — choose "Save as PDF"',
+    'scope.district':'District',
+    'nav.dashboard':'Dashboard','nav.policies':'Policy register','nav.alerts':'Expiry alerts','nav.add':'Add policy',
+    'nav.reports':'Reports','nav.staff':'Officers','nav.data':'Data & Excel',
+    'staff.col_actions':'',
+    'who.admin':'Administrator','who.local':'Local user',
+    'banner.local':'<b>Standalone mode.</b> Renewal statuses and new policies are saved in this browser. Use the <b>Data &amp; Excel</b> tab to back up or move data between computers.',
+    'banner.loading':'Loading {n}…',
+    'banner.urgent':'policies expire within 7 days in {scope} — <a href="#alerts" style="color:inherit;text-decoration:underline;font-weight:600">open Expiry alerts</a>',
+    'banner.past_due':'policies expired before {month} without a recorded status.',
+    'banner.progress':'Renewal outcomes recorded for <b>{decided}</b> of <b>{count}</b> policies ({pct}).',
+    'toast.saved':'Saved','toast.copied':'Copied','toast.deleted':'Deleted','toast.added':'Policy added','toast.updated':'Policy updated',
+    'dash.policies':'Policies','dash.premium':'Net premium','dash.renewed':'Renewed','dash.due':'Due in',
+    'dash.of':'of','dash.with_outcome':'with an outcome','dash.no_outcomes':'No outcomes recorded yet','dash.sum_insured':'Sum insured',
+    'dash.expiries_h':'Expiries by month','dash.expiries_s':'Policies by expiry month and renewal outcome',
+    'dash.performance_h':'Renewal performance by district','dash.performance_h_branch':'Renewal performance by branch','dash.performance_s':'Renewed ÷ (renewed + not renewed)',
+    'dash.col_district':'District','dash.col_policies':'Policies','dash.col_outcomes':'Outcomes','dash.col_rate':'Rate',
+    'pol.search':'Insured name, policy no. or policy ID','pol.status':'Status','pol.expiry':'Expiry','pol.branch':'Branch','pol.product':'Product','pol.assigned':'Assigned','pol.sort':'Sort',
+    'pol.s_all':'All','pol.s_open':'Open (needs action)','pol.s_R':'Renewed','pol.s_N':'Not renewed','pol.s_NEW':'New','pol.s_none':'No status',
+    'pol.w_all':'Any date','pol.w_exp':'Expired','pol.w_t7':'Within 7 days','pol.w_t30':'8–30 days','pol.w_t60':'31–60 days','pol.w_t90':'91–120 days',
+    'pol.b_all':'All branches','pol.p_all':'All products','pol.a_all':'Anyone','pol.a_me':'Assigned to me','pol.a_none':'Unassigned',
+    'pol.sort_end':'Expiry, soonest first','pol.sort_endd':'Expiry, latest first','pol.sort_prem':'Premium, highest first','pol.sort_name':'Insured name',
+    'pol.col_no':'Policy no.','pol.col_insured':'Insured','pol.col_branch':'Branch','pol.col_product':'Product','pol.col_expiry':'Expiry','pol.col_prem':'Net premium','pol.col_status':'Status','pol.col_assigned':'Assigned',
+    'pol.no_match_h':'No policies match','pol.no_match':'Clear a filter or search for a different name or number.',
+    'pol.page':'Page','pol.of_pages':'of','pol.policies':'policies','pol.policies_one':'policy','pol.net_prem':'net premium','pol.export':'Export (.xlsx)',
+    'pol.all_warn_h':'All districts is about 17 MB','pol.all_warn':'Load one district for speed, or load the whole portfolio when you need it.',
+    'pol.load_all':'Load all districts','pol.loading':'Loading','pol.load_err_h':'Could not load policy data','pol.try_again':'Try again',
+    'drawer.policy_id':'Policy ID','drawer.branch':'Branch','drawer.district':'District','drawer.product':'Product','drawer.sector':'Sector','drawer.end':'Insurance end','drawer.premium':'Net premium','drawer.sum':'Sum insured','drawer.added_by':'Added by import',
+    'drawer.tracking_h':'Renewal tracking','drawer.status':'Renewal status','drawer.assigned':'Assigned to','drawer.rp':'Renewal policy ID','drawer.reason':'Reason for non-renewal','drawer.notes':'Notes','drawer.notes_ph':'Contact attempts, promised dates, customer remarks','drawer.rp_ph':'ID of the new policy','drawer.unassigned':'Unassigned','drawer.no_status':'No status','drawer.last_updated':'Last updated','drawer.save':'Save','drawer.cancel':'Cancel','drawer.close':'Close',
+    'drawer.err_reason':'Choose a reason for non-renewal.','drawer.err_note':'Add a note that specifies the reason.','drawer.err_rp':'The renewal policy ID should be numeric.','drawer.err_save':'Could not save:','drawer.readonly_district':'This policy is outside your district scope.','drawer.readonly':'Read-only view.',
+    'drawer.edit':'Edit policy','drawer.delete':'Delete','drawer.confirm_delete':'Confirm delete','drawer.reset_tracking':'Reset tracking','drawer.confirm_reset':'Confirm reset','drawer.save_edit':'Save changes','drawer.id_locked':'Policy ID cannot be changed. To use a different ID, delete this policy and add a new one.',
+    'drawer.policy_actions':'Policy actions',
+    'pol.selected':'selected','pol.bulk_status':'Set status','pol.bulk_assign':'Assign to','pol.export_sel':'Export selected','pol.delete_sel':'Delete selected','pol.confirm_delete_sel':'Confirm delete {n}','pol.clear_sel':'Clear selection','pol.select_all_matching':'Select all {n} matching','pol.bulk_applied':'Updated {n} policies','pol.bulk_deleted':'Deleted {n} policies',
+    'pol.days_ago':'{n} d ago','pol.today':'Today','pol.days_left':'{n} d',
+    'toast.reset':'Tracking reset','toast.bulk_updated':'Bulk update done','toast.bulk_deleted':'Bulk delete done',
+    'alerts.note':'Open policies are those with no renewal recorded, or marked Not renewed with the reason <i>Promised to Renew</i>. Renewed policies, and policies lost for another reason, are left out.',
+    'alerts.exp':'Expired','alerts.t7':'Within 7 days','alerts.t30':'8–30 days','alerts.t60':'31–60 days','alerts.t90':'91–120 days',
+    'alerts.exp_s':'No renewal recorded','alerts.t7_s':'Expires 0–7 days','alerts.t30_s':'Expires in 8–30 days','alerts.t60_s':'Expires in 31–60 days','alerts.t90_s':'Expires in 91–120 days',
+    'alerts.open':'open policies','alerts.assigned_to_you':'assigned to you','alerts.most_recent':'most recently expired first','alerts.soonest':'soonest first','alerts.export':'Export this list (.xlsx)','alerts.show_more':'Show','alerts.more_of':'more of','alerts.remaining':'remaining',
+    'alerts.digest_h':'Email alert digest','alerts.digest_s':'Prepare the renewal reminder email for a person or the whole scope.','alerts.digest_warn':'This page cannot send email by itself. Copy the digest into your email, or use the button to open your mail app with the digest filled in.',
+    'alerts.include':'Include policies assigned to','alerts.everyone':'Everyone in scope','alerts.recipient':'Recipient email','alerts.copy':'Copy digest','alerts.mail':'Open in email app',
+    'add.h':'Add new policy','add.s':'Manually add a policy to the register. New policies are saved in this browser and join the district view you pick below.',
+    'add.policy_no':'Policy number','add.policy_id':'Policy ID','add.name':'Customer name','add.branch':'Branch / office','add.district':'District','add.product':'Product type','add.sector':'Sector','add.end':'Insurance end date','add.premium':'Net premium (ETB)','add.sum':'Sum insured (ETB)',
+    'add.status':'Renewal status','add.rp':'Renewal policy ID','add.reason':'Reason for non-renewal','add.notes':'Other remarks','add.notes_ph':'Anything else worth noting — contact attempts, promised dates, references',
+    'add.s_blank':'No status','add.s_NEW':'New','add.s_R':'Renewed','add.s_N':'Not renewed','add.reason_pick':'Select a reason',
+    'add.save':'Save policy','add.reset':'Clear form','add.err_required':'Please fill all required fields.','add.err_id':'Policy ID must be a number (6 digits or more).','add.err_premium':'Premium must be a number.','add.err_sum':'Sum insured must be a number.','add.err_end':'Insurance end date is required.','add.err_reason':'Choose a reason for non-renewal.','add.err_note':'Add a remark that specifies the reason.','add.err_rp':'Renewal policy ID must be numeric.','add.err_dup':'A policy with this ID already exists.','add.added_h':'Policy added','add.added_s':'You can find it in the Policy register under the district you selected.',
+    'add.tip':'Tip: pick the district first — the branch list will only show branches in that district.',
+    'reports.by_district':'District','reports.by_office':'Branch','reports.by_month':'Month','reports.by_product':'Product','reports.group_by':'Group by','reports.export_csv':'Export CSV',
+    'reports.col_group':'Group','reports.col_policies':'Policies','reports.col_prem':'Net premium','reports.col_R':'Renewed','reports.col_N':'Not renewed','reports.col_NEW':'New','reports.col_open':'Open','reports.col_Rp':'Renewed premium','reports.col_rate':'Renewal rate',
+    'reports.by_status':'Status',
+    'reports.total':'Total','reports.note':'Renewal rate counts only policies with a recorded outcome. Open means no outcome recorded yet, including policies that have not expired.','reports.all_districts':'All districts',
+    'staff.h':'Officers','staff.sub':'Add the people who handle renewals so policies can be assigned. Names are stored locally — only used as labels in this browser.','staff.add_h':'Add an officer','staff.add_ph':'Officer name','staff.add_btn':'Add','staff.col_name':'Name','staff.col_role':'Role','staff.col_districts':'Districts','staff.col_email':'Alert email','staff.col_actions':'',
+    'staff.you':'you','staff.remove':'Remove','staff.confirm':'Confirm remove','staff.could_not':'Could not remove','staff.empty_h':'No officers yet','staff.empty':'Add an officer to start assigning policies.','staff.roles_h':'Roles','staff.role_admin':'Administrator','staff.role_manager':'Manager','staff.role_officer':'Renewal officer',
+    'staff.r_admin':'<b>Administrator</b> manages officers, imports, restores backups and edits any policy.','staff.r_manager':'<b>Manager</b> edits and assigns any policy.','staff.r_officer':'<b>Renewal officer</b> sees and updates policies in their district or assigned to them.',
+    'data.import_h':'Import from Excel','data.import_s':'Reads any sheet with the renewal list columns (POLICY_ID, INSR_END, RENEWAL_STATUS and the rest). Rows with a status update the register. Policies not in the register are added.',
+    'data.import_pick':'Workbook (.xlsx, .xls or .csv)','data.export_h':'Export to Excel','data.export_s':'Download the register in the same columns as your renewal list, with statuses, assignees and notes added.',
+    'data.export_what':'What to export','data.export_scope':'Every policy in the selected district','data.export_tracked':'Only policies with a recorded status (all districts)','data.export_btn':'Export workbook','data.backup_h':'Backup','data.backup_s':'A JSON copy of all tracking records, new policies and officer settings. Policy master data is not included because it ships with the app.',
+    'data.backup_btn':'Download backup','data.restore_label':'Restore from a backup file','data.restore_btn':'Restore','data.restore_warn':'This backup holds','data.restore_groups':'record groups and','data.restore_staff':'officer entries. Restoring overwrites matching groups.',
+    'data.migrated_h':'What was migrated','data.migrated_sub':'From RENEWAL_LST___CHIMD_1.xlsx','data.migrated_1':'policies from RENEWAL TEMPLATE BASED (2), all 13 columns, in ','data.migrated_2':'districts and','data.migrated_3':'branches.','data.migrated_4':'October 2026 renewal statuses and renewal policy IDs from the NORTH WEST sheet (Burayu branch): 108 renewed, 97 not renewed.','data.migrated_5':'non-renewal reasons from DATA VALIDATION, and the branch-to-district map from DISTRICT AND OUTLET.',
+    'data.apply_btn':'Apply','data.changes':'changes','data.updates':'Statuses to update','data.adds':'New policies to add','data.same':'Already up to date','data.skipped':'No status, left unchanged','data.problems':'Rows with problems','data.show_problems':'Show problems','data.done':'Done.','data.records_saved':'records saved.','data.import_complete':'Import complete','data.stopped':'Stopped:','data.records_kept':'Records written so far are kept; run the import again to finish.','data.reading':'Reading workbook… large files can take a minute.','data.checking':'Checking','data.no_sheet':'No sheet with POLICY_ID and INSR_END columns was found.','data.could_not':'Could not read that file:','data.not_backup':'Not a backup from this app.',
+    'data.validation_h':'Data validation','data.validation_s':'A quick health check of the bundled policy data files.',
+    'data.v_districts':'Districts covered','data.v_offices':'Branches covered','data.v_policies':'Total policies','data.v_agg_rows':'Aggregate rows','data.v_tracked':'Tracking records','data.v_added':'Manually added','data.v_officers':'Officers','data.v_deleted':'Deleted policies','data.v_ok':'OK','data.v_warn':'Warning','data.v_bad':'Error',
+    'data.restore_h':'Restore deleted policies','data.restore_s':'{n} policies are marked as deleted in this browser. Restore them individually, or restore all at once.','data.restore_one':'Restore','data.restore_all':'Restore all','data.restore_done':'All deleted policies restored','data.restore_one_done':'Policy restored','data.deleted_on':'Deleted on','data.restore_count':'deleted in this browser|deleted in this browser','data.restore_deleted':'deleted','data.restore_edits':'edits',
+    'staff.one':'officer','dash.legend_past':'Past, no status','dash.legend_future':'Future','dash.expired_before':'expired before','dash.without_status':'without a status','dash.no_outcome_hint':'No renewal outcomes recorded yet. Open a policy from the Policy register to update its status.'
+  },
+  am:{
+    'brand.title':'የኢትዮጵያ መድን ኮርፖሬሽን',
+    'brand.sub':'የፖሊሲ አዲስነቶችን አብረን እንከታተላለን',
+    'pwa.install':'መተግበሪያ ጫን','pwa.update':'አዲስ እትም አለ','pwa.reload':'እንደገና ጫን','pwa.offline':'ከመስመር ውጪ ነዉ — መተግበሪያው አሁንም ይሰራል','pwa.online':'መስመር ላይ ተመለሱ','pwa.installed':'መተግበሪያ ተጫኗል','pwa.ios_hint':'ወደ መነሻ ስክሪን ጨምር፡ Share → Add to Home Screen',
+    'pdf.export':'ወደ PDF ወስድ','pdf.preparing':'PDF በማዘጋጀት ላይ…','pdf.opened':'የማተሚያ ማያ ተከፍቷል — «እንደ PDF አስቀምጥ» ይምሩ',
+    'scope.district':'ክልል / ወረዳ',
+    'nav.dashboard':'ዳሽቦርድ','nav.policies':'የፖሊሲ መዝገብ','nav.alerts':'የሚያበቃ ማስታወቂያ','nav.add':'አዲስ ፖሊሲ ጨምር',
+    'nav.reports':'ሪፖርቶች','nav.staff':'ኦፊሰሮች','nav.data':'ውሂብ እና ኤክሴል',
+    'staff.col_actions':'',
+    'who.admin':'አስተዳዳሪ','who.local':'አካባቢ ተጠቃሚ',
+    'banner.local':'<b>በራሱ የሚሰራ ሁኔታ።</b> የአዲስነት ሁኔታዎች እና አዲስ ፖሊሲዎች በዚህ ብሮውዘር ይቀመጣሉ። ውሂብን በቀላሉ ለማጋራት <b>ውሂብ እና ኤክሴል</b> ትርን ይጠቀሙ።',
+    'banner.loading':'{n} በመጫን ላይ…',
+    'banner.urgent':'ፖሊሲዎች በ7 ቀን ውስጥ በ{scope} ያበቃሉ — <a href="#alerts" style="color:inherit;text-decoration:underline;font-weight:600">የሚያበቃ ማስታወቂያ ክፈት</a>',
+    'banner.past_due':'ፖሊሲዎች ከ{month} በኩሩ ጊዜው ካለፈ ሁኔታ ሳይመዘገብ ጠፉ።',
+    'banner.progress':'የአዲስነት ውጤቶች ለ<b>{decided}</b> ከ<b>{count}</b> ፖሊሲዎች ተመዝግቧል ({pct})।',
+    'toast.saved':'ተቀምጧል','toast.copied':'ተቀድቧል','toast.deleted':'ተሰርዟል','toast.added':'ፖሊሲ ታክሏል','toast.updated':'ፖሊሲ ተዘምኗል',
+    'dash.policies':'ፖሊሲዎች','dash.premium':'ቁጥር ክፍያ','dash.renewed':'ታድሷል','dash.due':'የሚጠብቅበት','dash.of':'ከ','dash.with_outcome':'በውጤት ጋር','dash.no_outcomes':'እስካሁን ውጤት አልተመዘገበም','dash.sum_insured':'ጠቅላላ የመድን ድርሻ',
+    'dash.expiries_h':'በወር የሚያበቁት','dash.expiries_s':'በማብቂያ ወር እና በአዲስነት ሁኔታ የተከፋፈሉ ፖሊሲዎች',
+    'dash.performance_h':'በክልል የአዲስነት አፈጻጸም','dash.performance_h_branch':'በቅርንጫፍ የአዲስነት አፈጻጸም','dash.performance_s':'ታድሷል ÷ (ታድሷል + አልተደሰተም)',
+    'dash.col_district':'ክልል','dash.col_policies':'ፖሊሲዎች','dash.col_outcomes':'ውጤቶች','dash.col_rate':'መጠን',
+    'pol.search':'የደንበኛ ስም፣ የፖሊሲ ቁጥር ወይም መለያ','pol.status':'ሁኔታ','pol.expiry':'ማብቂያ','pol.branch':'ቅርንጫፍ','pol.product':'ምርት','pol.assigned':'የተሰጠ','pol.sort':'አደራደር',
+    'pol.s_all':'ሁሉም','pol.s_open':'ክፍት (ድርሚያ ያስፈልጋል)','pol.s_R':'ታድሷል','pol.s_N':'አልተደሰተም','pol.s_NEW':'አዲስ','pol.s_none':'ሁኔታ የለም',
+    'pol.w_all':'ማንኛውም ቀን','pol.w_exp':'ጊዜው አልፎታል','pol.w_t7':'በ7 ቀን ውስጥ','pol.w_t30':'8–30 ቀን','pol.w_t60':'31–60 ቀን','pol.w_t90':'91–120 ቀን',
+    'pol.b_all':'ሁሉም ቅርንጫፎች','pol.p_all':'ሁሉም ምርቶች','pol.a_all':'ማንኛውም','pol.a_me':'ለእኔ የተሰጠ','pol.a_none':'ለማንም አልተሰጠም',
+    'pol.sort_end':'ማብቂያ፣ ቀድሞውኑ','pol.sort_endd':'ማብቂያ፣ ኋላ','pol.sort_prem':'ክፍያ፣ ከፍተኛ መጀታ','pol.sort_name':'የደንበኛ ስም',
+    'pol.col_no':'የፖሊሲ ቁ.','pol.col_insured':'ደንበኛ','pol.col_branch':'ቅርንጫፍ','pol.col_product':'ምርት','pol.col_expiry':'ማብቂያ','pol.col_prem':'ክፍያ','pol.col_status':'ሁኔታ','pol.col_assigned':'የተሰጠ',
+    'pol.no_match_h':'ምንም ፖሊሲ አልተገኘም','pol.no_match':'አንድን ማጣሪያ አጽድቅ ወይም ሌላ ስም ወይም ቁጥር ፈልግ።',
+    'pol.page':'ገጽ','pol.of_pages':'ከ','pol.policies':'ፖሊሲዎች','pol.policies_one':'ፖሊሲ','pol.net_prem':'ቁጥር ክፍያ','pol.export':'ወደ ኤክሴል',
+    'pol.all_warn_h':'ሁሉም ክልሎች ~17 ሜባ ናቸው','pol.all_warn':'ለፍጥነት አንድ ክልል ጫን፣ ወይም ጠቅላላውን ፖርትፎሊዮ ሲያስፈልግ ጫን።',
+    'pol.load_all':'ሁሉንም ክልሎች ጫን','pol.loading':'በመጫን ላይ','pol.load_err_h':'የፖሊሲ ውሂብ መጫን አልቻለም','pol.try_again':'እንደገና ሞክር',
+    'drawer.policy_id':'የፖሊሲ መለያ','drawer.branch':'ቅርንጫፍ','drawer.district':'ክልል','drawer.product':'ምርት','drawer.sector':'ዘርፍ','drawer.end':'የመድን ማብቂያ','drawer.premium':'ክፍያ','drawer.sum':'ጠቅላላ ድርሻ','drawer.added_by':'በኢምፖርት ታክሏል',
+    'drawer.tracking_h':'የአዲስነት ክትትል','drawer.status':'የአዲስነት ሁኔታ','drawer.assigned':'ለማን ተሰጠ','drawer.rp':'የአዲስ ፖሊሲ መለያ','drawer.reason':'ያልተደሰተበት ምክንያት','drawer.notes':'ሌሎች ማስታወሻዎች','drawer.notes_ph':'የግንኙነት ሙከራዎች፣ የተስማሙ ቀናት፣ የደንበኛ አስተያየቶች','drawer.rp_ph':'የአዲሱ ፖሊሲ መለያ','drawer.unassigned':'ለማንም አልተሰጠም','drawer.no_status':'ሁኔታ የለም','drawer.last_updated':'መጨረሻ የተዘምነው','drawer.save':'አስቀምጥ','drawer.cancel':'ይቅር','drawer.close':'ዝጋ',
+    'drawer.err_reason':'ያልተደሰተበትን ምክንያት ይምሩ።','drawer.err_note':'ምክንያቱን የሚገልጽ ማስታወሻ ያክሉ።','drawer.err_rp':'የአዲስ ፖሊሲ መለያ ቁጥር መሆን አለበት።','drawer.err_save':'ማስቀመጥ አልቻለም:','drawer.readonly_district':'ይህ ፖሊሲ ከክልልህ ውጪ ነው።','drawer.readonly':'ለንባብ ብቻ።',
+    'drawer.edit':'ፖሊሲ አርም','drawer.delete':'ሰርዝ','drawer.confirm_delete':'ሰርዝ ይሁንታ','drawer.reset_tracking':'ክትትል ዳግም አስጀምር','drawer.confirm_reset':'አስጀምር ይሁንታ','drawer.save_edit':'ለውጥ አስቀምጥ','drawer.id_locked':'የፖሊሲ መለያ መቀየር አይቻልም። ሌላ መለያ ለመጠቀም ይህን ፖሊሲ ደምርና አዲስ ጨምር።',
+    'drawer.policy_actions':'የፖሊሲ ተግባራት',
+    'pol.selected':'ተመርጠዋል','pol.bulk_status':'ሁኔታ አዘጋጅ','pol.bulk_assign':'ለማን እንደሚሰጥ አዘጋጅ','pol.export_sel':'የተመረጡን ወደ ኤክሴል','pol.delete_sel':'የተመረጡን ሰርዝ','pol.confirm_delete_sel':'{n} ፖሊሲ ሰርዝ ይሁንታ','pol.clear_sel':'አጽዳ','pol.select_all_matching':'{n} ተመጣጣኝ ሁሉንም ምረጥ','pol.bulk_applied':'{n} ፖሊሲ ተዘምነዋል','pol.bulk_deleted':'{n} ፖሊሲ ተሰርዟል',
+    'pol.days_ago':'{n} ቀን ዳለ','pol.today':'ዛሬ','pol.days_left':'{n} ቀን',
+    'toast.reset':'ክትትል ተደግሞ ተጀምሯል','toast.bulk_updated':'ብዙ ማዘመን ተጠናቅቋል','toast.bulk_deleted':'ብዙ ሰርዝ ተጠናቅቋል',
+    'alerts.note':'ክፍት ፖሊሲዎች ምንም የአዲስነት መዝገብ የሌለባቸው ወይም «እንደገና ይታደሳል» ተብለው የተወሰኑ ናቸው። የታደሱ እና ለሌላ ምክንያት የጠፉት አይካተሙም።',
+    'alerts.exp':'ጊዜው አልፎታል','alerts.t7':'በ7 ቀን ውስጥ','alerts.t30':'8–30 ቀን','alerts.t60':'31–60 ቀን','alerts.t90':'91–120 ቀን',
+    'alerts.exp_s':'ምንም የአዲስነት መዝገብ የለም','alerts.t7_s':'በ0–7 ቀን ያበቃል','alerts.t30_s':'በ8–30 ቀን ያበቃል','alerts.t60_s':'በ31–60 ቀን ያበቃል','alerts.t90_s':'በ91–120 ቀን ያበቃል',
+    'alerts.open':'ክፍት ፖሊሲዎች','alerts.assigned_to_you':'ለእኔ የተሰጡ','alerts.most_recent':'በቅርብ ጊዜ የጠፉ መጀርታ','alerts.soonest':'ቀድሞውኑ','alerts.export':'ይህንን ዝርዝር ወደ ኤክሴል','alerts.show_more':'ተጨማሪ','alerts.more_of':'ከ','alerts.remaining':'የቀሩት',
+    'alerts.digest_h':'የኢሜል ማስታወቂያ ማጠቃለያ','alerts.digest_s':'ለአንድ ሰው ወይም ለሁሉም ስኮፕ የአዲስነት ማስታወቂያ ኢሜል ያዘጋጁ።','alerts.digest_warn':'ይህ ገጽ በራሱ ኢሜል መላክ አይችልም። ማጠቃለያውን ወደ ኢሜልዎ ይቅዱ፣ ወይም የኢሜል መተግበሪያዎን ለመክፈት ቁልፍን ይጠቀሙ።',
+    'alerts.include':'የተሰጡ ፖሊሲዎችን ያካትቱ','alerts.everyone':'በስኮፕ ሁሉም','alerts.recipient':'የተቀባይ ኢሜል','alerts.copy':'ማጠቃለያ ቅዳ','alerts.mail':'በኢሜል መተግበሪያ ክፈት',
+    'add.h':'አዲስ ፖሊሲ ጨምር','add.s':'በእጅ ፖሊሲ ወደ መዝገብ ያክሉ። አዲስ ፖሊሲዎች በዚህ ብሮውዘር ይቀመጣሉ እና ከታች ወደሚመርጧት ክልል እይታ ይቀላቀላሉ።',
+    'add.policy_no':'የፖሊሲ ቁጥር','add.policy_id':'የፖሊሲ መለያ','add.name':'የደንበኛ ስም','add.branch':'ቅርንጫፍ / ቢሮ','add.district':'ክልል','add.product':'የምርት አይነት','add.sector':'ዘርፍ','add.end':'የመድን ማብቂያ ቀን','add.premium':'ክፍያ (ETB)','add.sum':'ጠቅላላ ድርሻ (ETB)',
+    'add.status':'የአዲስነት ሁኔታ','add.rp':'የአዲስ ፖሊሲ መለያ','add.reason':'ያልተደሰተበት ምክንያት','add.notes':'ሌሎች አስተያየቶች','add.notes_ph':'ሌላ የሚታወሰው ሁሉ — የግንኙነት ሙከራዎች፣ የተስማሙ ቀናት፣ ማጣቀሻዎች',
+    'add.s_blank':'ሁኔታ የለም','add.s_NEW':'አዲስ','add.s_R':'ታድሷል','add.s_N':'አልተደሰተም','add.reason_pick':'ምክንያት ይምሩ',
+    'add.save':'ፖሊሲ አስቀምጥ','add.reset':'ቅጹን አጽዳ','add.err_required':'እባክዎ ሁሉንም አስፈላጊ መስኮች ይሙሉ።','add.err_id':'የፖሊሲ መለያ ቁጥር (6 ወይም ከዚያ በላይ አሃዞች) መሆን አለበት።','add.err_premium':'ክፍያ ቁጥር መሆን አለበት።','add.err_sum':'ጠቅላላ ድርሻ ቁጥር መሆን አለበት።','add.err_end':'የመድን ማብቂያ ቀን አስፈላጊ ነው።','add.err_reason':'ያልተደሰተበትን ምክንያት ይምሩ።','add.err_note':'ምክንያቱን የሚገልጽ አስተያየት ያክሉ።','add.err_rp':'የአዲስ ፖሊሲ መለያ ቁጥር መሆን አለበት።','add.err_dup':'በዚህ መለያ ያለ ፖሊሲ አስቀድሞ አለ።','add.added_h':'ፖሊሲ ታክሏል','add.added_s':'ከመረጡት ክልል ጋር በፖሊሲ መዝገብ ውስጥ ማግኘት ይችላሉ።',
+    'add.tip':'ጠቃሚ ምክር: ክልልን መጀመር ይምረጡ — የቅርንጫፍ ዝርዝር የዚያን ክልል ቅርንጫፎችን ብቻ ያሳያል።',
+    'reports.by_district':'ክልል','reports.by_office':'ቅርንጫፍ','reports.by_month':'ወር','reports.by_product':'ምርት','reports.by_status':'ሁኔታ','reports.group_by':'በቡ አሰባስብ','reports.export_csv':'CSV ወደ ኤክሴል',
+    'reports.col_group':'ቡ','reports.col_policies':'ፖሊሲዎች','reports.col_prem':'ቁጥር ክፍያ','reports.col_R':'ታድሷል','reports.col_N':'አልተደሰተም','reports.col_NEW':'አዲስ','reports.col_open':'ክፍት','reports.col_Rp':'የተደሰተ ክፍያ','reports.col_rate':'የአዲስነት መጠን',
+    'reports.total':'ጠቅላላ','reports.note':'የአዲስነት መጠን ውጤት የተመዘገበባቸውን ፖሊሲዎችን ብቻ ይቆጥራል። ክፍት ማለት እስካሁን ምንም ውጤት ያልተመዘገበበት ማለት ነው፣ ጊዜው ያልበቃባቸውን ጨምሮ።','reports.all_districts':'ሁሉም ክልሎች',
+    'staff.h':'ኦፊሰሮች','staff.sub':'የአዲስነት ሂደትን የሚከታተሉትን ሰዎች ያክሉ። ስሞች በአካባቢው ይቀመጣሉ — በዚህ ብሮውዘር ውስጥ እንደ መለያ ብቻ ጥቅም ላይ ይውላሉ።','staff.add_h':'ኦፊሰር ያክሉ','staff.add_ph':'የኦፊሰር ስም','staff.add_btn':'አክል','staff.col_name':'ስም','staff.col_role':'ሚና','staff.col_districts':'ክልሎች','staff.col_email':'የኢሜል ማግኛ','staff.col_actions':'',
+    'staff.you':'እርስዎ','staff.remove':'አስወግድ','staff.confirm':'አስወግድ ይሁንታ','staff.could_not':'ማስወገድ አልቻለም','staff.empty_h':'እስካሁን ኦፊሰሮች የሉም','staff.empty':'ፖሊሲ ለመመደብ ኦፊሰር ይጨምሩ።','staff.roles_h':'ሚናዎች','staff.role_admin':'አስተዳዳሪ','staff.role_manager':'ስራ አስፈፃሚ','staff.role_officer':'የአዲስነት ኦፊሰር',
+    'staff.r_admin':'<b>አስተዳዳሪ</b> ኦፊሰሮችን፣ ኢምፖርቶችን፣ ባክአፕ መልስ እና ማንኛውንም ፖሊሲ ያስተካክላል።','staff.r_manager':'<b>ስራ አስፈፃሚ</b> ማንኛውንም ፖሊሲ ያስተካክላል እና ያመደባል።','staff.r_officer':'<b>የአዲስነት ኦፊሰር</b> በክልሉ ውስጥ ወይም ለራሱ የተመደቡ ፖሊሲዎችን ያያል እና ያዘምናል።',
+    'data.import_h':'ከኤክሴል ኢምፖርት','data.import_s':'የአዲስነት ዝርዝር ዓምዶች (POLICY_ID፣ INSR_END፣ RENEWAL_STATUS እና የቀሩት) ያለው ማንኛውንም ሉህ ያነባል። ሁኔታ ያላቸው ረድፎች መዝገቡን ያዘምናሉ። በመዝገቡ ውስጥ የሌሉ ፖሊሲዎች ይታክላሉ።',
+    'data.import_pick':'የስራ መጽሐፍ (.xlsx፣ .xls ወይም .csv)','data.export_h':'ወደ ኤክሴል ኤክስፖርት','data.export_s':'መዝገቡን ከአዲስነት ዝርዝር አምዶችዎ ጋር በተመሳሳይ፣ ሁኔታዎች፣ የተመደቡ እና ማስታወሻዎች ተጨምረው ያውርዱ።',
+    'data.export_what':'ምን እንደሚኤክስፖርት','data.export_scope':'በተመረጠ ክልል ውስጥ ያለ ሁሉም ፖሊሲ','data.export_tracked':'ሁኔታ የተመዘገበላቸው ፖሊሲዎች ብቻ (ሁሉም ክልሎች)','data.export_btn':'የስራ መጽሐፍ አውርድ','data.backup_h':'ባክአፕ','data.backup_s':'የሁሉም የክትትል መዝገቦች፣ አዲስ ፖሊሲዎች እና የኦፊሰር ቅንብሮች JSON ቅጂ። የፖሊሲ መረጃዎች ከመተግበሪያው ጋር ስለሚመጣ አይካተሙም።',
+    'data.backup_btn':'ባክአፕ አውርድ','data.restore_label':'ከባክአፕ ፋይል መልስ','data.restore_btn':'መልስ','data.restore_warn':'ይህ ባክአፕ ይዟል','data.restore_groups':'የመዝገብ ቡድኖች እና','data.restore_staff':'የኦፊሰር ግቤቶች። መልሶ ማስገባት ተመሳሳይ ቡድኖችን ይሽራል።',
+    'data.migrated_h':'የተተላለፈው','data.migrated_sub':'ከ RENEWAL_LST___CHIMD_1.xlsx','data.migrated_1':'ፖሊሲዎች ከ RENEWAL TEMPLATE BASED (2)፣ ሁሉም 13 አምዶች፣ በ','data.migrated_2':'ክልሎች እና በ','data.migrated_3':'ቅርንጫፎች።','data.migrated_4':'የጥቅት 2026 የአዲስነት ሁኔታዎች እና የአዲስ ፖሊሲ መለያዎች ከ NORTH WEST ሉህ (Burayu ቅርንጫፍ): 108 ታድሷል፣ 97 አልተደሰቱም።','data.migrated_5':'ያልተደሰቱ ምክንያቶች ከ DATA VALIDATION፣ እና ቅርንጫፍ-ወደ-ክልል ካርታ ከ DISTRICT AND OUTLET።',
+    'data.apply_btn':'ተግብር','data.changes':'ለውጥዎች','data.updates':'ለማዘመን ሁኔታዎች','data.adds':'ለመጨመር አዲስ ፖሊሲዎች','data.same':'አስቀድሞ ወቅቱ','data.skipped':'ሁኔታ የለሽ፣ እንዳለ ተተወ','data.problems':'ችግር ያለባቸው ረድፎች','data.show_problems':'ችግሮችን አሳይ','data.done':'ተጠናቅቋል።','data.records_saved':'መዝገቦች ተቀምጠዋል።','data.import_complete':'ኢምፖርት ተጠናቅቋል','data.stopped':'ቆመበት:','data.records_kept':'እስካሁን የተጻፉ መዝገቦች ተጠብቀዋል፤ ሂደቱን ለመጨረስ ኢምፖርቱን እንደገና ያካክሉ።','data.reading':'የስራ መጽሐፉን በማንበብ ላይ… ትላል ፋይሎች ማስከት ይወስዳል።','data.checking':'በማረጋገጥ ላይ','data.no_sheet':'POLICY_ID እና INSR_END አምዶች ያሉበት ሉህ አልተገኘም።','data.could_not':'ያንን ፋይል ማንበብ አልቻለም:','data.not_backup':'ከዚህ መተግበሪያ ያልሆነ ባክአፕ።',
+    'data.validation_h':'የውሂብ ማረጋገጥ','data.validation_s':'የተጠቀሉ የፖሊሲ ውሂብ ፋይሎች ፈጣን የጤና ሁኔታ ማረጋገጥ።',
+    'data.v_districts':'የተሸፈኑ ክልሎች','data.v_offices':'የተሸፈኑ ቅርንጫፎች','data.v_policies':'ጠቅላላ ፖሊሲዎች','data.v_agg_rows':'ስብስብ ረድፎች','data.v_tracked':'የክትትል መዝገቦች','data.v_added':'በእጅ የተጨመሩ','data.v_officers':'ኦፊሰሮች','data.v_deleted':'የተሰረዙ ፖሊሲዎች','data.v_ok':'ትክክል','data.v_warn':'ማስጠንቀቂያ','data.v_bad':'ስህተት',
+    'data.restore_h':'የተሰረዙ ፖሊሲዎች ይመልሱ','data.restore_s':'{n} ፖሊሲዎች በዚህ ብሮውዘር ውስጥ እንደ ተሰርዙ ተመርጠዋል። እያንዳንዳቸውን ይመልሱ፣ ወይም ሁሉንም በአንድ ጊዜ ይመልሱ።','data.restore_one':'ይመለስ','data.restore_all':'ሁሉንም ይመልሱ','data.restore_done':'ሁሉም የተሰረዙ ፖሊሲዎች ተመልሰዋል','data.restore_one_done':'ፖሊሲ ተመልሷል','data.deleted_on':'የተሰረዘበት','data.restore_count':'በዚህ ብሮውዘር ውስጥ ተሰርዟል|በዚህ ብሮውዘር ውስጥ ተሰርዟል','data.restore_deleted':'የተሰረዙ','data.restore_edits':'አርትኦቶች',
+    'staff.one':'ኦፊሰር','dash.legend_past':'ያለፈ፣ ሁኔታ የለም','dash.legend_future':'የወደፊት','dash.expired_before':'ከ','dash.without_status':'በኩሩ ጊዜው ካለፈ ሁኔታ ሳይመዘገበ','dash.no_outcome_hint':'እስካሁን የአዲስነት ውጤት አልተመዘገበም። ሁኔታውን ለማዘመን ከፖሊሲ መዝገብ ፖሊሲ ይክፈቱ።'
+  }
+};
+let LANG = (function(){ try { return localStorage.getItem('irm.lang') || 'en'; } catch(e){ return 'en'; } })();
+const t = (k) => { const v = (I18N[LANG] && I18N[LANG][k]) ?? I18N.en[k]; return v === undefined ? k : v; };
+window.t = t; // expose for the PWA install/update scripts
+
+/* ===================== Helpers ===================== */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const pad=n=>String(n).padStart(2,'0');
+const isoOf=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const TODAY=(()=>{const d=new Date();d.setHours(0,0,0,0);return d})();
+const TODAY_ISO=isoOf(TODAY), NOW_M=TODAY_ISO.slice(0,7);
+const dte=e=>Math.round((new Date(e+'T00:00:00')-TODAY)/864e5);
+const fd=e=>{const[y,m,d]=e.split('-');return d+' '+MN[+m-1]+' '+y};
+const fm=k=>{const[y,m]=k.split('-');return MN[+m-1]+' '+y};
+const fmt=n=>Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmt0=n=>Number(n||0).toLocaleString('en-US',{maximumFractionDigits:0});
+const compact=n=>{const a=Math.abs(n);return a>=1e12?(n/1e12).toFixed(2)+'T':a>=1e9?(n/1e9).toFixed(2)+'B':a>=1e6?(n/1e6).toFixed(1)+'M':a>=1e3?(n/1e3).toFixed(1)+'K':fmt0(n)};
+const slugOf=s=>String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+const pct=x=>x==null?'–':(x*100).toFixed(1)+'%';
+const store={
+  get(k){try{return localStorage.getItem(k)}catch(e){return null}},
+  set(k,v){try{localStorage.setItem(k,v)}catch(e){}},
+  del(k){try{return localStorage.removeItem(k)}catch(e){}}
+};
+const PARTS=4;
+const bkey=(office,end,pid)=>slugOf(office)+'__'+end.slice(0,7)+'__'+(Number(pid)%PARTS);
+let toastT;
+function toast(m){const tEl=$('#toast');tEl.textContent=m;tEl.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>tEl.hidden=true,3600)}
+window.toast = toast; // expose for the PWA install/update scripts
+window.setBanner = ()=>{}; // stub — reassigned once setBanner() is defined below
+
+/* ===================== Local backend (replaces Claude.ai APIs) ===================== */
+/*   track bucket    : Map<key, {office,district,month,recs:{pid:{...}}}>   */
+/*   staff           : Map<uid, {name,role,districts,email,active}>         */
+/*   addedPolicies    : Map<pid, row>                                         */
+const LocalDB={
+  _read(k,def){try{const v=localStorage.getItem(k);return v?JSON.parse(v):def}catch(e){return def}},
+  _write(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){toast('Local storage is full or unavailable')}},
+
+  track:new Map(),
+  staff:new Map(),
+  added:new Map(),
+  edits:new Map(),
+  deleted:new Set(),
+  deletedRows:new Map(),
+
+  load(){
+    this.track=new Map(Object.entries(this._read('irm.track',{})));
+    this.staff=new Map(Object.entries(this._read('irm.staff',{})));
+    this.added=new Map(Object.entries(this._read('irm.added',{})));
+    this.edits=new Map(Object.entries(this._read('irm.edits',{})).map(([k,v])=>[Number(k),v]));
+    this.deleted=new Set((this._read('irm.deleted',[])||[]).map(Number));
+    this.deletedRows=new Map(Object.entries(this._read('irm.deletedRows',{})).map(([k,v])=>[Number(k),v]));
+  },
+  saveTrack(){this._write('irm.track',Object.fromEntries(this.track))},
+  saveStaff(){this._write('irm.staff',Object.fromEntries(this.staff))},
+  saveAdded(){this._write('irm.added',Object.fromEntries(this.added))},
+  saveEdits(){this._write('irm.edits',Object.fromEntries([...this.edits.entries()].map(([k,v])=>[String(k),v])))},
+  saveDeleted(){this._write('irm.deleted',[...this.deleted])},
+  saveDeletedRows(){this._write('irm.deletedRows',Object.fromEntries([...this.deletedRows.entries()].map(([k,v])=>[String(k),v])))},
+
+  /* Firestore-like collection('track').doc(key) — minimal subset of what the original code uses */
+  collection(name){
+    const self=this;
+    return {
+      doc(id){
+        return {
+          async get(){
+            const store = name==='track'?self.track:name==='staff'?self.staff:null;
+            if(!store) return {exists:false,data:()=>null};
+            return {exists:store.has(id),data:()=>store.get(id)||null};
+          },
+          async set(data){
+            if(name==='track'){self.track.set(id,data);self.saveTrack()}
+            else if(name==='staff'){self.staff.set(id,data);self.saveStaff()}
+          },
+          async update(patch){
+            if(name==='track'){const cur=self.track.get(id)||{};const mp=Object.assign({},patch);if(patch.recs&&cur.recs)mp.recs=Object.assign({},cur.recs,patch.recs);self.track.set(id,Object.assign({},cur,mp));self.saveTrack()}
+            else if(name==='staff'){const cur=self.staff.get(id)||{};self.staff.set(id,Object.assign({},cur,patch));self.saveStaff()}
+          },
+          async delete(){
+            if(name==='track'){self.track.delete(id);self.saveTrack()}
+            else if(name==='staff'){self.staff.delete(id);self.saveStaff()}
+          },
+          onSnapshot(cb,errCb){
+            /* Fire once with the current state. Local mode has no realtime updates. */
+            const store = name==='track'?self.track:name==='staff'?self.staff:null;
+            if(!store){errCb&&errCb({code:'no-such-collection'});return ()=>{}}
+            try{
+              const docs=[...store.entries()].map(([k,v])=>({id:k,data:()=>v}));
+              cb({docs,metadata:{fromCache:false}});
+            }catch(e){errCb&&errCb(e)}
+            return ()=>{};
+          }
+        };
+      }
+    };
+  }
+};
+
+/* User capability stub: in local mode, the user is the single admin. */
+const LocalUser={
+  isOwner: async()=>true,
+  canEdit: async()=>true,
+  can: async()=>true,
+  id: async()=> 'local-admin',
+  profiles: async(ids)=>Object.fromEntries(ids.map(id=>[id,{name:(LocalDB.staff.get(id)||{}).name||'You'}])),
+  search: async()=>[]
+};
+
+/* Downloads capability stub: turn into a Blob download via an anchor tag. */
+const LocalDL={
+  async save({filename,data}){
+    return new Promise((resolve,reject)=>{
+      try{
+        const blob=data instanceof Blob?data:new Blob([data],{type:'application/octet-stream'});
+        const url=URL.createObjectURL(blob);
+        const a=document.createElement('a');
+        a.href=url;a.download=filename;
+        document.body.appendChild(a);a.click();a.remove();
+        setTimeout(()=>{URL.revokeObjectURL(url);resolve()},50);
+      }catch(e){reject(e)}
+    });
+  }
+};
+
+/* ===================== State ===================== */
+const S={meta:null,db:null,userCap:null,dlCap:null,uid:null,isOwner:false,isEditor:false,dataWrite:null,
+  staff:{},staffReady:false,trackDocs:new Map(),trackReady:false,trackErr:null,tidx:new Map(),addedBy:new Map(),tv:0,
+  master:{},rcache:{},profiles:{},view:'dashboard',scope:'',
+  pol:{q:'',status:'all',win:'all',office:'',prod:'',assign:'all',sort:'end',page:0,selected:new Set()},
+  list:[],alertTier:'t7',alertLimit:100,reportBy:'district',chart:'count',dashPerfBy:'district',digestWho:'',validationCache:null};
+const VIEWS=[['dashboard','nav.dashboard'],['policies','nav.policies'],['alerts','nav.alerts'],['add','nav.add'],['reports','nav.reports'],['staff','nav.staff'],['data','nav.data']];
+const TIERS=[
+  {k:'exp',tKey:'alerts.exp',sKey:'alerts.exp_s',tone:'bad'},
+  {k:'t7', tKey:'alerts.t7', sKey:'alerts.t7_s', tone:'bad'},
+  {k:'t30',tKey:'alerts.t30',sKey:'alerts.t30_s',tone:'warn'},
+  {k:'t60',tKey:'alerts.t60',sKey:'alerts.t60_s',tone:''},
+  {k:'t90',tKey:'alerts.t90',sKey:'alerts.t90_s',tone:''}
+];
+const tierOf=d=>d<0?'exp':d<=7?'t7':d<=30?'t30':d<=60?'t60':d<=90?'t90':null;
+const ROLES={admin:'staff.role_admin',manager:'staff.role_manager',officer:'staff.role_officer'};
+
+/* ---------- row model: [no,id,name,office,product,sector,end,prem,sum,districtIdx] ---------- */
+const oName=r=>typeof r[3]==='number'?S.meta.offices[r[3]].n:r[3];
+const pName=r=>typeof r[4]==='number'?S.meta.products[r[4]]:r[4];
+const sName=r=>typeof r[5]==='number'?S.meta.sectors[r[5]]:r[5];
+const dName=r=>typeof r[9]==='number'?S.meta.districts[r[9]].n:r[9];
+const recOf=r=>{const c=S.tidx.get(r[1]);return c?c.rec:null};
+const reasonTxt=i=>i>=0&&S.meta.reasons[i]?S.meta.reasons[i].trim():'';
+const isOpen=rec=>!rec||!rec.s||(rec.s==='N'&&(rec.rs<0||reasonTxt(rec.rs)==='Promised to Renew'));
+const statusOf=rec=>rec&&rec.s==='R'?t('pol.s_R'):rec&&rec.s==='N'?t('pol.s_N'):rec&&rec.s==='NEW'?t('pol.s_NEW'):t('pol.s_none');
+const role=()=>'admin';  /* single-user local mode */
+const canWrite=()=>!!S.db&&S.dataWrite!==false&&role()!=='viewer';
+const canEditRow=r=>canWrite();
+const nm=id=>(S.profiles[id]&&S.profiles[id].name)||(S.staff[id]&&S.staff[id].name)||'Officer';
+const scopeNames=()=>S.scope==='__all'?S.meta.districts.map(d=>d.n):[S.scope];
+
+/* ===================== Tracking index ===================== */
+function rebuild(){
+  S.tidx=new Map();S.addedBy=new Map();
+  for(const[key,d]of S.trackDocs){const recs=d.recs||{};
+    for(const pid in recs){const r=recs[pid],id=Number(pid);
+      S.tidx.set(id,{rec:r,office:d.office,district:d.district,month:d.month,key});
+      if(r.add){const di=S.meta.districts.findIndex(x=>x.n===d.district);
+        const row=[r.no||'',id,r.nm||'',d.office,r.pd>=0?S.meta.products[r.pd]||r.pn||'':r.pn||'',r.sc>=0?S.meta.sectors[r.sc]||'':'',r.end,r.pr||0,r.sm||0,di>=0?di:d.district];
+        if(!S.addedBy.has(d.district))S.addedBy.set(d.district,[]);S.addedBy.get(d.district).push(row)}}}
+  /* Also fold in manually-added policies that don't have a tracking record yet */
+  for(const[id,row]of LocalDB.added){
+    if(!S.tidx.has(id)){
+      const dn=dName(row),key=bkey(oName(row),row[6],id);
+      const rec={s:'',rp:'',rs:-1,as:'',nt:'',pr:row[7],pd:S.meta.products.indexOf(pName(row)),by:'local-admin',at:Math.floor(Date.now()/1000),add:1,no:row[0],nm:row[2],sc:S.meta.sectors.indexOf(sName(row)),end:row[6],sm:row[8]};
+      S.tidx.set(id,{rec,office:oName(row),district:dn,month:row[6].slice(0,7),key});
+      if(!S.addedBy.has(dn))S.addedBy.set(dn,[]);S.addedBy.get(dn).push(row);
+      S.trackDocs.set(key,{office:oName(row),district:dn,month:row[6].slice(0,7),recs:{[String(id)]:rec}});
+    }
+  }
+  S.tv++;S.rcache={};
+}
+/* ---------- Edit / delete helpers ---------- */
+function isDeleted(id){return LocalDB.deleted.has(id)}
+function applyEdit(r){const e=LocalDB.edits.get(r[1]);if(!e)return r;
+  return [e.no!=null?e.no:r[0],r[1],e.nm!=null?e.nm:r[2],e.oi!=null?e.oi:r[3],e.pd!=null?e.pd:r[4],e.sc!=null?e.sc:r[5],e.end!=null?e.end:r[6],e.prem!=null?e.prem:r[7],e.sum!=null?e.sum:r[8],e.di!=null?e.di:r[9]]}
+async function editPolicy(oldRow,fields){
+  const id=oldRow[1];const oldDi=oldRow[9];const newDi=fields.di!=null?fields.di:oldDi;
+  if(newDi!==oldDi){
+    /* District changed: hide from old district, add as new in the new district */
+    LocalDB.deleted.add(id);LocalDB.saveDeleted();
+    const newRow=[fields.no!=null?fields.no:oldRow[0],id,fields.nm!=null?fields.nm:oldRow[2],fields.oi!=null?fields.oi:oldRow[3],fields.pd!=null?fields.pd:oldRow[4],fields.sc!=null?fields.sc:oldRow[5],fields.end!=null?fields.end:oldRow[6],fields.prem!=null?fields.prem:oldRow[7],fields.sum!=null?fields.sum:oldRow[8],newDi];
+    LocalDB.added.set(id,newRow);LocalDB.saveAdded();
+    const branch=S.meta.offices[fields.oi].n,district=S.meta.districts[newDi].n,end=fields.end!=null?fields.end:oldRow[6];
+    const rec={s:'',rp:'',rs:-1,as:'',nt:'',pr:fields.prem!=null?fields.prem:oldRow[7],pd:fields.pd!=null?fields.pd:oldRow[4],pn:'',by:S.uid||'',at:Math.floor(Date.now()/1000),add:1,no:fields.no!=null?fields.no:oldRow[0],nm:fields.nm!=null?fields.nm:oldRow[2],sc:fields.sc!=null?fields.sc:oldRow[5],end,sm:fields.sum!=null?fields.sum:oldRow[8]};
+    const key=bkey(branch,end,id);S.trackDocs.set(key,{office:branch,district,month:end.slice(0,7),recs:{[String(id)]:rec}});LocalDB.track.set(key,S.trackDocs.get(key));LocalDB.saveTrack();
+  } else {
+    LocalDB.edits.set(id,fields);LocalDB.saveEdits();
+    if(LocalDB.added.has(id)){const old=LocalDB.added.get(id);LocalDB.added.set(id,[fields.no!=null?fields.no:old[0],id,fields.nm!=null?fields.nm:old[2],fields.oi!=null?fields.oi:old[3],fields.pd!=null?fields.pd:old[4],fields.sc!=null?fields.sc:old[5],fields.end!=null?fields.end:old[6],fields.prem!=null?fields.prem:old[7],fields.sum!=null?fields.sum:old[8],fields.di!=null?fields.di:old[9]]);LocalDB.saveAdded()}
+    const trec=S.tidx.get(id);
+    if(trec&&trec.rec){const rec=trec.rec;if(fields.no!=null)rec.no=fields.no;if(fields.nm!=null)rec.nm=fields.nm;if(fields.pd!=null)rec.pd=fields.pd;if(fields.sc!=null)rec.sc=fields.sc;if(fields.end!=null)rec.end=fields.end;if(fields.prem!=null)rec.pr=fields.prem;if(fields.sum!=null)rec.sm=fields.sum;const key=trec.key;LocalDB.track.set(key,S.trackDocs.get(key));LocalDB.saveTrack()}
+  }
+  rebuild()}
+async function deletePolicy(id, optRow){
+  /* Capture metadata before deletion so the policy can be restored later. */
+  const trec=S.tidx.get(id);
+  const addedRow=LocalDB.added.get(id);
+  const edit=LocalDB.edits.get(id);
+  /* Find the row to display in the restore list — priority: manually-added → caller-supplied → currently-filtered list → reconstructed from tracking record. */
+  let row=addedRow;
+  if(!row && optRow) row=optRow;
+  if(!row && S.list) row=S.list.find(r=>r[1]===id);
+  if(!row && trec && trec.rec && trec.rec.add){
+    const di=S.meta.districts.findIndex(d=>d.n===trec.district);
+    const oi=S.meta.offices.findIndex(o=>o.n===trec.office);
+    row=[trec.rec.no||'', id, trec.rec.nm||'', oi>=0?oi:trec.office, trec.rec.pd>=0?trec.rec.pd:-1, trec.rec.sc>=0?trec.rec.sc:-1, trec.rec.end||'', trec.rec.pr||0, trec.rec.sm||0, di>=0?di:trec.district];
+  }
+  const meta={wasAdded:!!addedRow, deletedAt:Date.now()};
+  if(row) meta.row=row;
+  if(trec) meta.track={office:trec.office, district:trec.district, month:trec.month, key:trec.key, rec:trec.rec};
+  if(edit) meta.edit=edit;
+  LocalDB.deletedRows.set(id, meta);LocalDB.saveDeletedRows();
+  LocalDB.added.delete(id);LocalDB.saveAdded();
+  LocalDB.deleted.add(id);LocalDB.saveDeleted();
+  if(trec){const key=trec.key;const td=S.trackDocs.get(key);if(td&&td.recs){delete td.recs[String(id)];LocalDB.track.set(key,td);LocalDB.saveTrack()}}
+  LocalDB.edits.delete(id);LocalDB.saveEdits();
+  rebuild()}
+async function restorePolicy(id){
+  const meta=LocalDB.deletedRows.get(id);
+  if(meta){
+    if(meta.wasAdded && meta.row){LocalDB.added.set(id, meta.row);LocalDB.saveAdded()}
+    if(meta.track){const key=meta.track.key;const td=S.trackDocs.get(key)||{office:meta.track.office,district:meta.track.district,month:meta.track.month,recs:{}};td.recs[String(id)]=meta.track.rec;S.trackDocs.set(key,td);LocalDB.track.set(key,td);LocalDB.saveTrack()}
+    if(meta.edit){LocalDB.edits.set(id, meta.edit);LocalDB.saveEdits()}
+    LocalDB.deletedRows.delete(id);LocalDB.saveDeletedRows();
+  }
+  LocalDB.deleted.delete(id);LocalDB.saveDeleted();
+  rebuild()}
+async function restoreAllDeleted(){
+  const ids=[...LocalDB.deleted];
+  for(const id of ids) await restorePolicy(id);
+  rebuild()}
+async function clearTracking(id){
+  const trec=S.tidx.get(id);
+  if(trec){const key=trec.key;const td=S.trackDocs.get(key);if(td&&td.recs){delete td.recs[String(id)];LocalDB.track.set(key,td);LocalDB.saveTrack()}}
+  rebuild()}
+function rowsFor(name){
+  const sl=slugOf(name),m=S.master[sl];if(!m)return null;
+  const c=S.rcache[sl];if(c&&c.k===S.tv)return c.v;
+  const add=S.addedBy.get(name)||[];
+  let v=add.length?m.concat(add):m;
+  v=v.filter(r=>!LocalDB.deleted.has(r[1])).map(applyEdit);
+  S.rcache[sl]={k:S.tv,v};return v}
+async function loadDistrict(name){
+  const sl=slugOf(name);if(S.master[sl])return S.master[sl];
+  const d=S.meta.districts.find(x=>x.n===name);if(!d)return[];
+  if(!S.pending)S.pending={};
+  if(!S.pending[sl])S.pending[sl]=fetch(d.file).then(r=>{if(!r.ok)throw new Error('Could not load '+name);return r.json()}).then(j=>{S.master[sl]=j;delete S.pending[sl];return j});
+  return S.pending[sl]}
+function scopeRows(){
+  const out=[];for(const n of scopeNames()){const r=rowsFor(n);if(!r)return null;out.push(r)}
+  return out.length===1?out[0]:[].concat(...out)}
+async function ensureScope(){
+  if(!S.scope)return;
+  if(S.scope==='__all'&&!S.allWanted)return;
+  S.loadingScope=true;try{for(const n of scopeNames())await loadDistrict(n)}catch(e){S.loadErr=e.message}
+  S.loadingScope=false;renderBell();render()}
+
+/* ===================== Writes ===================== */
+async function saveBucket(key,office,district,month,recs){
+  const ref=S.db.collection('track').doc(key);
+  try{await ref.update({recs})}catch(e){
+    if(e&&e.code==='invalid_argument')await ref.set({office,district,month,recs});else throw e}}
+function prodIdx(r){const i=S.meta.products.indexOf(pName(r));return i}
+function makeRec(r,f,old){
+  const rec=Object.assign({},old||{},{s:f.s,rp:f.rp,rs:f.rs,as:f.as,nt:f.nt,pr:r[7],pd:prodIdx(r),by:S.uid||'',at:Math.floor(Date.now()/1000)});
+  if(rec.pd<0)rec.pn=pName(r);return rec}
+async function saveRow(r,f){
+  const rec=makeRec(r,f,recOf(r));
+  const key=bkey(oName(r),r[6],r[1]);
+  await saveBucket(key,oName(r),dName(r),r[6].slice(0,7),{[String(r[1])]:rec});
+  /* In local mode there's no realtime listener, so update S.trackDocs + rebuild explicitly */
+  const td=S.trackDocs.get(key)||{office:oName(r),district:dName(r),month:r[6].slice(0,7),recs:{}};
+  td.recs[String(r[1])]=rec;
+  S.trackDocs.set(key,td);
+  rebuild()}
+
+/* ===================== Aggregation ===================== */
+function distIdx(){return S.scope&&S.scope!=='__all'?S.meta.districts.findIndex(d=>d.n===S.scope):null}
+function report(by,allDistricts){
+  const m=S.meta,sd=allDistricts?null:distIdx(),g=new Map();
+  /* Each group tracks: count, premium, sum insured, plus per-status counters (R, N, NEW, Open) */
+  const grp=k=>{let x=g.get(k);if(!x){x={key:k,count:0,prem:0,sum:0,R:0,N:0,NEW:0,Rp:0,Np:0,NEWp:0,Rc:0,Nc:0};g.set(k,x)}return x};
+  /* For the 'status' grouping, the totals (count/prem/sum) come from summing all in-scope
+     agg rows ONCE (regardless of product). Status sub-counts (R/N/NEW) come from the tracking
+     index + added-policies loops below. */
+  if(by==='status'){
+    /* One synthetic group per status code: '_open' (no status), 'NEW', 'R', 'N' */
+    const groupKeys=['_open','NEW','R','N'];
+    /* First pass: total policies + premium + sum from agg (in scope). */
+    let totalCount=0,totalPrem=0,totalSum=0;
+    for(const a of m.agg){if(sd!=null&&a[0]!==sd)continue;totalCount+=a[4];totalPrem+=a[5];totalSum+=a[6]}
+    /* Initialize each status group with zero; we'll fill count/prem from the tidx loop. */
+    for(const k of groupKeys){grp(k)}
+    /* Now walk the tracking index and added policies, counting each policy into its status bucket. */
+    const countInto=(statusKey,pr,sumIns,skipAddRec)=>{
+      const x=g.get(statusKey)||grp(statusKey);
+      x.count++; x.prem+=pr||0; x.sum+=sumIns||0;
+      if(statusKey==='R'){x.R++;x.Rp+=pr||0}
+      else if(statusKey==='N'){x.N++;x.Np+=pr||0}
+      else if(statusKey==='NEW'){x.NEW++;x.NEWp+=pr||0}
+    };
+    for(const[,c]of S.tidx){const r=c.rec;if(r.add)continue;
+      const di=m.districts.findIndex(d=>d.n===c.district);if(sd!=null&&di!==sd)continue;
+      countInto(r.s||'_open', r.pr||0, r.sm||0)}
+    for(const[id,row]of LocalDB.added){
+      const di=m.districts.findIndex(d=>d.n===dName(row));if(sd!=null&&di!==sd)continue;
+      const rec=recOf(row);
+      countInto(rec&&rec.s||'_open', row[7]||0, row[8]||0)}
+    /* Open count = total policies - decided (R+N+NEW). Use the agg-derived total when
+       tracking is sparse, so the Open row shows the real total minus the decided ones. */
+    const decidedTotal=g.get('R').count+g.get('N').count+g.get('NEW').count;
+    if(decidedTotal < totalCount){
+      /* Adjust the _open group to take the remainder */
+      const open=g.get('_open');
+      const trueOpen=totalCount-decidedTotal;
+      const trueOpenPrem=totalPrem-g.get('R').prem-g.get('N').prem-g.get('NEW').prem;
+      const trueOpenSum=totalSum-g.get('R').sum-g.get('N').sum-g.get('NEW').sum;
+      open.count=trueOpen; open.prem=trueOpenPrem; open.sum=trueOpenSum;
+    }
+  } else {
+    /* Standard grouping (district/office/month/product): walk the agg array. */
+    for(const a of m.agg){if(sd!=null&&a[0]!==sd&&by!=='district')continue;
+      const k=by==='district'?a[0]:by==='office'?a[1]:by==='month'?a[2]:a[3];
+      const x=grp(k);x.count+=a[4];x.prem+=a[5];x.sum+=a[6]}
+    for(const[,c]of S.tidx){const r=c.rec;if(r.add)continue;
+      const di=m.districts.findIndex(d=>d.n===c.district);if(sd!=null&&di!==sd&&by!=='district')continue;
+      const k=by==='district'?di:by==='office'?m.offices.findIndex(o=>o.n===c.office):by==='month'?c.month:r.pd;
+      if(!g.has(k))continue;const x=g.get(k);
+      if(r.s==='R'){x.R++;x.Rp+=r.pr||0}else if(r.s==='N'){x.N++;x.Np+=r.pr||0}else if(r.s==='NEW'){x.NEW++;x.NEWp+=r.pr||0}}
+    /* Include manually-added policies into the aggregates too */
+    for(const[id,row]of LocalDB.added){
+      const di=m.districts.findIndex(d=>d.n===dName(row));
+      if(sd!=null&&di!==sd&&by!=='district')continue;
+      const k=by==='district'?di:by==='office'?m.offices.findIndex(o=>o.n===oName(row)):by==='month'?row[6].slice(0,7):m.products.indexOf(pName(row));
+      let x=g.get(k);if(!x){x={key:k,count:0,prem:0,sum:0,R:0,N:0,NEW:0,Rp:0,Np:0,NEWp:0,Rc:0,Nc:0};g.set(k,x)}
+      x.count+=1;x.prem+=row[7];x.sum+=row[8];
+      const rec=recOf(row);
+      if(rec&&rec.s==='R'){x.R++;x.Rp+=rec.pr||row[7]||0}else if(rec&&rec.s==='N'){x.N++;x.Np+=rec.pr||row[7]||0}else if(rec&&rec.s==='NEW'){x.NEW++;x.NEWp+=rec.pr||row[7]||0}
+    }
+  }
+  const out=[...g.values()].map(x=>{
+    x.label=by==='district'?(m.districts[x.key]?m.districts[x.key].n:'?'):by==='office'?(m.offices[x.key]?m.offices[x.key].n:'?'):by==='month'?fm(x.key):by==='status'?(
+      x.key==='_open'?'Open (no status)':x.key==='R'?'Renewed':x.key==='N'?'Not renewed':x.key==='NEW'?'New':'Other'
+    ):(m.products[x.key]||'Other');
+    x.decided=x.R+x.N+x.NEW;x.rate=x.decided?(x.R+x.NEW)/x.decided:null;x.open=x.count-x.decided;x.openp=x.prem-x.Rp-x.Np-x.NEWp;return x});
+  if(by==='month')out.sort((a,b)=>a.key<b.key?-1:1);
+  else if(by==='status')out.sort((a,b)=>(['_open','NEW','R','N'].indexOf(a.key))<(['_open','NEW','R','N'].indexOf(b.key))?-1:1);
+  else out.sort((a,b)=>b.count-a.count);
+  return out}
+
+/* ===================== Shell rendering ===================== */
+function setBanner(){
+  /* The top banner now shows contextual, scope-aware notifications instead of
+     the constant "Standalone mode" note. Use cases, in priority order:
+       1. Tracking error                — red, "Tracking data could not be read"
+       2. Loading scope                 — info, "Loading <district>…"
+       3. Offline                       — warn, "You are offline — the app still works"
+       4. Urgent expiry within 7 days   — bad (red), "X policies expire within 7 days in <scope>"
+       5. Past-due with no status       — warn, "X policies expired before <month> without a status"
+       6. Renewal progress              — info, "Outcomes recorded for X of Y policies (Z%)"
+     The local-mode hint is shown only on first visit (using sessionStorage). */
+  const b=[];
+  if(S.trackErr){b.push('<div class="note bad">'+t('data.could_not')+' '+esc(S.trackErr.code||'error')+'</div>')}
+  else if(S.loadingScope){b.push('<div class="note">'+t('banner.loading').replace('{n}',esc(S.scope==='__all'?t('reports.all_districts'):S.scope))+'</div>')}
+  else if(typeof navigator!=='undefined'&&!navigator.onLine){b.push('<div class="note warn">'+t('pwa.offline')+'</div>')}
+  else{
+    /* Compute scope-specific metrics for the contextual notifications. */
+    const rows=scopeRows();
+    if(rows){
+      /* 4. Urgent expiry within 7 days */
+      let urgent=0;for(const r of rows){const d=dte(r[6]);if(d>=0&&d<=7&&isOpen(recOf(r)))urgent++}
+      if(urgent>0){
+        const scopeLbl=S.scope==='__all'||!S.scope?t('reports.all_districts'):S.scope;
+        b.push('<div class="note bad"><b>'+fmt0(urgent)+'</b> '+t('banner.urgent').replace('{scope}',esc(scopeLbl))+'</div>');
+      }
+      /* 5. Past-due with no status */
+      const mon=report('month');
+      let pastOpen=0;for(const x of mon)if(x.key<NOW_M)pastOpen+=x.count-x.R-x.N-x.NEW;
+      if(pastOpen>0){
+        b.push('<div class="note warn"><b>'+fmt0(pastOpen)+'</b> '+t('banner.past_due').replace('{month}',fm(NOW_M))+'</div>');
+      }
+      /* 6. Renewal progress — only show when outcomes have been recorded */
+      const dist=report('district');const sd=distIdx();const dsel=sd==null?dist:dist.filter(x=>x.key===sd);
+      let count=0,R=0,N=0,NEW=0;for(const x of dsel){count+=x.count;R+=x.R;N+=x.N;NEW+=x.NEW}
+      const decided=R+N+NEW;
+      if(decided>0&&decided<count){
+        const pctVal=count?(decided/count):0;
+        b.push('<div class="note">'+t('banner.progress').replace('{decided}',fmt0(decided)).replace('{count}',fmt0(count)).replace('{pct}',pct(pctVal))+'</div>');
+      } else if(decided===0&&!S.loadingScope){
+        /* First-visit hint about local mode — only show once per session. */
+        let seen=null;try{seen=sessionStorage.getItem('irm.bannerHintSeen')}catch(e){}
+        if(!seen){
+          b.push('<div class="note">'+t('banner.local')+'</div>');
+          try{sessionStorage.setItem('irm.bannerHintSeen','1')}catch(e){}
+        }
+      }
+    }
+  }
+  $('#banner').innerHTML=b.join('')}
+window.setBanner = setBanner; // expose for the online/offline event handlers
+function renderNav(){
+  const n=alertBadge();
+  $('#nav').innerHTML=VIEWS.map(([k,key])=>`<a href="#${k}" ${S.view===k?'aria-current="page"':''}>${esc(t(key))}${k==='alerts'&&n?`<span class="badge" id="bell" title="${esc(t('alerts.t7'))}">${n>99?'99+':n}</span>`:''}</a>`).join('')}
+function renderBell(){renderNav()}
+function alertBadge(){const rows=scopeRows();if(!rows)return 0;let n=0;
+  for(const r of rows){const d=dte(r[6]);if(d>=0&&d<=7&&isOpen(recOf(r)))n++}return n}
+function renderWho(){
+  $('#who').innerHTML=`<span class="pill accent">${esc(t('who.admin'))}</span>`}
+function fillScope(){
+  const sel=$('#scope');if(!S.meta)return;
+  sel.innerHTML=S.meta.districts.map(d=>`<option value="${esc(d.n)}">${esc(d.n)} (${fmt0(d.count)})</option>`).join('')+`<option value="__all">${esc(t('reports.all_districts'))}</option>`;
+  sel.value=S.scope}
+function applyLang(){
+  document.documentElement.lang=LANG;
+  document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.getAttribute('data-i18n');const v=t(k);if(v)el.innerHTML=v;else el.innerHTML='';});
+  $('#langLabel').textContent = LANG==='en' ? 'አማ · AM' : 'EN · English';
+  /* Update document title */
+  document.title = t('brand.title');
+}
+let rT;function scheduleRender(){clearTimeout(rT);rT=setTimeout(()=>{
+  if(!S.meta)return;
+  if(S.view==='data'){renderNav();renderWho();setBanner();return}
+  if(S.view==='policies'&&$('#polTable')&&scopeRows()){renderNav();renderWho();setBanner();polTable();return}
+  render()},60)}
+function render(){
+  if(!S.meta)return;
+  const v=VIEWS.find(x=>x[0]===S.view)||VIEWS[0];$('#title').textContent=t(v[1]);document.title=t('brand.title');
+  const main=$('.main');if(main)main.setAttribute('data-view',S.view);  /* used by print CSS for landscape Reports */
+  renderNav();renderWho();setBanner();updatePrintHeader();
+  const el=$('#view');
+  ({dashboard:vDash,policies:vPol,alerts:vAlerts,add:vAdd,reports:vReports,staff:vStaff,data:vData})[S.view](el)}
+
+/* Update the print-only report header — shows the EIC logo + report name + scope + date on every printed PDF */
+function updatePrintHeader(){
+  const v=VIEWS.find(x=>x[0]===S.view)||VIEWS[0];
+  const reportEl=$('#printReportName');
+  const scopeEl=$('#printScope');
+  const dateEl=$('#printDate');
+  if(reportEl) reportEl.textContent = t(v[1]);
+  if(scopeEl)  scopeEl.textContent = (S.scope==='__all'||!S.scope) ? t('reports.all_districts') : S.scope;
+  if(dateEl)   dateEl.textContent = fd(TODAY_ISO) + ' · ' + new Date().toLocaleTimeString();
+}
+
+/* ===================== Dashboard ===================== */
+function niceMax(v){if(v<=0)return 1;const p=Math.pow(10,Math.floor(Math.log10(v)));const f=v/p;return(f<=1?1:f<=2?2:f<=5?5:10)*p}
+function vDash(el){
+  const m=S.meta,dist=report('district'),mon=report('month');
+  /* The performance table can be grouped by district or by branch. */
+  const perfBy=S.dashPerfBy||'district';
+  const perfRows=report(perfBy);
+  const sd=distIdx(),dsel=sd==null?dist:dist.filter(x=>x.key===sd);
+  let count=0,prem=0,R=0,N=0,NEW=0,Rp=0;for(const x of dsel){count+=x.count;prem+=x.prem;R+=x.R;N+=x.N;NEW+=x.NEW;Rp+=x.Rp}
+  const cm=mon.find(x=>x.key===NOW_M)||{count:0,prem:0,R:0,N:0,NEW:0};
+  let pastOpen=0;for(const x of mon)if(x.key<NOW_M)pastOpen+=x.count-x.R-x.N-x.NEW;
+  const decided=R+N+NEW,scopeLbl=S.scope==='__all'||!S.scope?t('reports.all_districts'):S.scope;
+  const kp=(l,v,d)=>`<div class="kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="d">${d}</div></div>`;
+  const maxC=Math.max(...mon.map(x=>S.chart==='count'?x.count:x.prem),1),top=niceMax(maxC);
+  const W=720,H=270,L=52,B=30,T=10,bw=(W-L-8)/mon.length,ph=H-B-T;
+  const val=(c,p)=>S.chart==='count'?c:p;
+  let svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(t('dash.expiries_h'))}">`;
+  for(let i=0;i<=4;i++){const y=T+ph-ph*i/4;svg+=`<line class="grid" x1="${L}" x2="${W-8}" y1="${y}" y2="${y}"/><text x="${L-6}" y="${y+4}" text-anchor="end">${compact(top*i/4)}</text>`}
+  mon.forEach((x,i)=>{
+    const past=x.key<NOW_M,segs=[[val(x.R,x.Rp),'var(--good)'],[val(x.N,x.Np),'var(--bad)'],[val(x.NEW,x.NEWp),'var(--accent)'],[val(x.count-x.R-x.N-x.NEW,x.prem-x.Rp-x.Np-x.NEWp),past?'var(--warn)':'var(--line)']];
+    let y=T+ph;const bx=L+i*bw+bw*.16,w=bw*.68;
+    for(const[v,c] of segs){const h=Math.max(0,v)/top*ph;if(h<=0)continue;y-=h;svg+=`<rect x="${bx.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" fill="${c}"/>`}
+    const lab=MN[+x.key.slice(5)-1]+(x.key.slice(5)==='01'||i===0?" '"+x.key.slice(2,4):'');
+    svg+=`<text x="${(bx+w/2).toFixed(1)}" y="${H-10}" text-anchor="middle" class="${x.key===NOW_M?'cur':''}">${lab}</text>`;
+    if(x.key===NOW_M)svg+=`<rect x="${(bx-3).toFixed(1)}" y="${H-B+2}" width="${(w+6).toFixed(1)}" height="2" fill="var(--accent)"/>`});
+  svg+='</svg>';
+  /* Performance table rows — branch view shows all branches in the current scope; district view shows districts */
+  const perfTblRows=perfRows.map(x=>`<tr><td>${esc(x.label)}</td><td class="r num">${fmt0(x.count)}</td><td class="r num">${fmt0(x.decided)}</td><td style="min-width:110px">${x.rate==null?'<span class="muted" title="'+esc(t('dash.no_outcomes'))+'">–</span>':`<div style="display:flex;align-items:center;gap:8px"><div class="hbar" style="flex:1"><div style="width:${(x.rate*100).toFixed(0)}%"></div></div><span class="num">${pct(x.rate)}</span></div>`}</td></tr>`).join('');
+  const covered=count?decided/count:0;
+  el.innerHTML=`<div class="stack">
+  <div class="kpis">
+    ${kp(esc(t('dash.policies')),fmt0(count),esc(scopeLbl)+' · Jul 2026 – Jun 2027')}
+    ${kp(esc(t('dash.premium')),'ETB '+compact(prem),t('dash.sum_insured')+' ETB '+compact(dsel.reduce((a,x)=>a+x.sum,0)))}
+    ${kp(esc(t('dash.renewed')),fmt0(R+NEW),decided?pct((R+NEW)/decided)+' '+t('dash.of')+' '+fmt0(decided)+' '+t('dash.with_outcome'):t('dash.no_outcomes'))}
+    ${kp(esc(t('dash.due'))+' '+fm(NOW_M),fmt0(cm.count),'ETB '+compact(cm.prem)+' · '+fmt0(cm.count-cm.R-cm.N-cm.NEW)+' open')}
+  </div>
+  ${decided<count*.2?`<div class="note">${t('dash.renewed')} <b>${fmt0(decided)}</b> / ${fmt0(count)} (${pct(covered)}). <b>${fmt0(pastOpen)}</b> ${esc(t('dash.expired_before'))} ${fm(NOW_M)} ${esc(t('dash.without_status'))}.</div>`:''}
+  ${decided===0?`<div class="note">${esc(t('dash.no_outcome_hint'))}</div>`:''}
+  <div class="grid2">
+    <div class="panel"><div class="row" style="justify-content:space-between"><div><h2>${esc(t('dash.expiries_h'))}</h2><div class="sub">${esc(t('dash.expiries_s'))}</div></div>
+      <div class="seg" role="group" aria-label="Chart measure"><button data-chart="count" aria-pressed="${S.chart==='count'}">${esc(t('dash.policies'))}</button><button data-chart="prem" aria-pressed="${S.chart==='prem'}">${esc(t('dash.premium'))}</button></div></div>
+      ${svg}
+      <div class="legend"><span><i style="background:var(--good)"></i>${esc(t('pol.s_R'))}</span><span><i style="background:var(--bad)"></i>${esc(t('pol.s_N'))}</span><span><i style="background:var(--accent)"></i>${esc(t('pol.s_NEW'))}</span><span><i style="background:var(--warn)"></i>${esc(t('dash.legend_past'))}</span><span><i style="background:var(--line)"></i>${esc(t('dash.legend_future'))}</span></div>
+    </div>
+    <div class="panel"><div class="row" style="justify-content:space-between;align-items:flex-start"><div><h2>${esc(perfBy==='district'?t('dash.performance_h'):t('dash.performance_h_branch'))}</h2><div class="sub">${esc(t('dash.performance_s'))}</div></div>
+      <div class="seg" role="group" aria-label="Group performance by"><button data-perfby="district" aria-pressed="${perfBy==='district'}">${esc(t('reports.by_district'))}</button><button data-perfby="office" aria-pressed="${perfBy==='office'}">${esc(t('reports.by_office'))}</button></div></div>
+      <div class="tablewrap" style="max-height:310px;overflow:auto"><table><thead><tr><th>${esc(perfBy==='district'?t('dash.col_district'):t('pol.col_branch'))}</th><th class="r">${esc(t('dash.col_policies'))}</th><th class="r">${esc(t('dash.col_outcomes'))}</th><th>${esc(t('dash.col_rate'))}</th></tr></thead><tbody>${perfTblRows}</tbody></table></div></div>
+  </div></div>`;
+  $$('[data-chart]',el).forEach(b=>b.onclick=()=>{S.chart=b.dataset.chart;render()});
+  $$('[data-perfby]',el).forEach(b=>b.onclick=()=>{S.dashPerfBy=b.dataset.perfby;render()})}
+
+/* ===================== Policy register ===================== */
+function chipDays(e,open){const d=dte(e);if(!open)return'';const ti=tierOf(d);
+  const txt=d<0?t('pol.days_ago').replace('{n}',Math.abs(d)):d===0?t('pol.today'):t('pol.days_left').replace('{n}',d);
+  return`<span class="pill ${ti==='exp'||ti==='t7'?'bad':ti==='t30'?'warn':ti?'accent':''}">${txt}</span>`}
+function statusPill(rec){const s=statusOf(rec);return`<span class="pill ${s===t('pol.s_R')?'good':s===t('pol.s_N')?'bad':s===t('pol.s_NEW')?'accent':''}">${s}</span>`}
+function needsLoad(el){
+  if(S.scope==='__all'&&!S.allWanted){el.innerHTML=`<div class="panel empty"><b>${esc(t('pol.all_warn_h'))}</b>${esc(t('pol.all_warn'))}<div style="margin-top:12px"><button class="btn primary" id="loadAll">${esc(t('pol.load_all'))}</button></div></div>`;$('#loadAll').onclick=()=>{S.allWanted=true;ensureScope()};return true}
+  if(S.loadErr){el.innerHTML=`<div class="panel empty"><b>${esc(t('pol.load_err_h'))}</b>${esc(S.loadErr)}<div style="margin-top:12px"><button class="btn" id="retry">${esc(t('pol.try_again'))}</button></div></div>`;$('#retry').onclick=()=>{S.loadErr='';ensureScope()};return true}
+  if(!scopeRows()){el.innerHTML=`<div class="panel empty"><b>${esc(t('pol.loading'))} ${esc(S.scope==='__all'?t('reports.all_districts'):S.scope)}…</b></div>`;ensureScope();return true}
+  return false}
+function vPol(el){
+  if(needsLoad(el))return;
+  const m=S.meta,f=S.pol,offs=[...new Set(scopeRows().map(oName))].sort();
+  const months=m.months.map(k=>`<option value="m:${k}">${fm(k)}</option>`).join('');
+  const staffOpts=Object.keys(S.staff).map(id=>`<option value="${esc(id)}">${esc(nm(id))}</option>`).join('');
+  el.innerHTML=`<div class="stack">
+  <div class="bar">
+    <label class="f grow"><span>${esc(t('pol.search').split(',')[0])}</span><input type="search" id="q" placeholder="${esc(t('pol.search'))}" value="${esc(f.q)}"></label>
+    <label class="f"><span>${esc(t('pol.status'))}</span><select id="fs"><option value="all">${esc(t('pol.s_all'))}</option><option value="open">${esc(t('pol.s_open'))}</option><option value="R">${esc(t('pol.s_R'))}</option><option value="N">${esc(t('pol.s_N'))}</option><option value="NEW">${esc(t('pol.s_NEW'))}</option><option value="none">${esc(t('pol.s_none'))}</option></select></label>
+    <label class="f"><span>${esc(t('pol.expiry'))}</span><select id="fw"><option value="all">${esc(t('pol.w_all'))}</option><option value="exp">${esc(t('pol.w_exp'))}</option><option value="t7">${esc(t('pol.w_t7'))}</option><option value="t30">${esc(t('pol.w_t30'))}</option><option value="t60">${esc(t('pol.w_t60'))}</option><option value="t90">${esc(t('pol.w_t90'))}</option>${months}</select></label>
+    <label class="f"><span>${esc(t('pol.branch'))}</span><select id="fo"><option value="">${esc(t('pol.b_all'))}</option>${offs.map(o=>`<option>${esc(o)}</option>`).join('')}</select></label>
+    <label class="f"><span>${esc(t('pol.product'))}</span><select id="fp"><option value="">${esc(t('pol.p_all'))}</option>${m.products.map(o=>`<option>${esc(o)}</option>`).join('')}</select></label>
+    <label class="f"><span>${esc(t('pol.assigned'))}</span><select id="fa"><option value="all">${esc(t('pol.a_all'))}</option><option value="me">${esc(t('pol.a_me'))}</option><option value="none">${esc(t('pol.a_none'))}</option>${staffOpts}</select></label>
+    <label class="f"><span>${esc(t('pol.sort'))}</span><select id="so"><option value="end">${esc(t('pol.sort_end'))}</option><option value="endd">${esc(t('pol.sort_endd'))}</option><option value="prem">${esc(t('pol.sort_prem'))}</option><option value="name">${esc(t('pol.sort_name'))}</option></select></label>
+  </div>
+  <div id="polTable"></div></div>`;
+  $('#fs').value=f.status;$('#fw').value=f.win;$('#fo').value=f.office;$('#fp').value=f.prod;$('#fa').value=f.assign;$('#so').value=f.sort;
+  let tt;$('#q').oninput=e=>{clearTimeout(tt);tt=setTimeout(()=>{f.q=e.target.value;f.page=0;polTable()},180)};
+  for(const[id,k]of[['fs','status'],['fw','win'],['fo','office'],['fp','prod'],['fa','assign'],['so','sort']])$('#'+id).onchange=e=>{f[k]=e.target.value;f.page=0;f.selected.clear();polTable()};
+  polTable()}
+function filterRows(rows,f){
+  const q=f.q.trim().toLowerCase(),out=[];
+  for(const r of rows){
+    if(q&&!(r[2].toLowerCase().includes(q)||r[0].toLowerCase().includes(q)||String(r[1]).includes(q)))continue;
+    const rec=recOf(r);
+    if(f.status==='open'&&!isOpen(rec))continue;
+    if(f.status==='R'&&!(rec&&rec.s==='R'))continue;
+    if(f.status==='N'&&!(rec&&rec.s==='N'))continue;
+    if(f.status==='NEW'&&!(rec&&rec.s==='NEW'))continue;
+    if(f.status==='none'&&rec&&rec.s)continue;
+    if(f.win!=='all'){if(f.win.startsWith('m:')){if(r[6].slice(0,7)!==f.win.slice(2))continue}else if(tierOf(dte(r[6]))!==f.win)continue}
+    if(f.office&&oName(r)!==f.office)continue;
+    if(f.prod&&pName(r)!==f.prod)continue;
+    if(f.assign==='me'&&!(rec&&rec.as===S.uid))continue;
+    if(f.assign==='none'&&rec&&rec.as)continue;
+    if(f.assign!=='all'&&f.assign!=='me'&&f.assign!=='none'&&!(rec&&rec.as===f.assign))continue;
+    out.push(r)}
+  const s=f.sort;out.sort(s==='end'?(a,b)=>a[6]<b[6]?-1:a[6]>b[6]?1:0:s==='endd'?(a,b)=>a[6]<b[6]?1:a[6]>b[6]?-1:0:s==='prem'?(a,b)=>b[7]-a[7]:(a,b)=>a[2].localeCompare(b[2]));
+  return out}
+function tableHTML(list,page,per,withCheckboxes){
+  const slice=list.slice(page*per,page*per+per);
+  if(!slice.length)return`<div class="panel empty"><b>${esc(t('pol.no_match_h'))}</b>${esc(t('pol.no_match'))}</div>`;
+  const allOnPageChecked=withCheckboxes&&slice.length&&slice.every(r=>S.pol.selected.has(r[1]));
+  const cbHead=withCheckboxes?`<th style="width:30px;padding:8px 6px"><input type="checkbox" id="selAll" ${allOnPageChecked?'checked':''} aria-label="Select all on page"></th>`:'';
+  return`<div class="tablewrap"><table><thead><tr>${cbHead}<th>${esc(t('pol.col_no'))}</th><th>${esc(t('pol.col_insured'))}</th><th>${esc(t('pol.col_branch'))}</th><th>${esc(t('pol.col_product'))}</th><th>${esc(t('pol.col_expiry'))}</th><th class="r">${esc(t('pol.col_prem'))}</th><th>${esc(t('pol.col_status'))}</th><th>${esc(t('pol.col_assigned'))}</th></tr></thead><tbody>${slice.map((r,i)=>{
+    const rec=recOf(r),open=isOpen(rec),name=nm(rec&&rec.as)||'';
+    const cb=withCheckboxes?`<td style="padding:8px 6px" onclick="event.stopPropagation()"><input type="checkbox" class="rowSel" data-id="${r[1]}" ${S.pol.selected.has(r[1])?'checked':''} aria-label="Select ${esc(r[0])}"></td>`:'';
+    return`<tr class="click ${S.pol.selected.has(r[1])?'selected':''}" data-i="${page*per+i}" tabindex="0">${cb}<td class="mono">${esc(r[0])}</td><td><div class="nm">${esc(r[2])}</div></td><td>${esc(oName(r))}</td><td>${esc(pName(r))}</td><td class="num" style="white-space:nowrap">${fd(r[6])} ${chipDays(r[6],open)}</td><td class="r num">${fmt(r[7])}</td><td>${statusPill(rec)}${r[1]&&S.tidx.get(r[1])&&S.tidx.get(r[1]).rec.add?`<span class="pill accent" title="${esc(t('drawer.added_by'))}">+</span>`:''}</td><td>${name&&name!=='Officer'?esc(name):'<span class="muted">–</span>'}</td></tr>`}).join('')}</tbody></table></div>`}
+function bindRows(root,withCheckboxes){
+  $$('tr[data-i]',root).forEach(tr=>{const go=()=>openPolicy(S.list[+tr.dataset.i]);tr.onclick=go;tr.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go()}}});
+  if(!withCheckboxes)return;
+  $$('.rowSel',root).forEach(cb=>{cb.onclick=e=>e.stopPropagation();cb.onchange=e=>{e.stopPropagation();const id=Number(cb.dataset.id);if(cb.checked)S.pol.selected.add(id);else S.pol.selected.delete(id);const tr=cb.closest('tr');if(tr)tr.classList.toggle('selected',cb.checked);updateBulkBar();const allOnPageChecked=$$('tr[data-i] .rowSel',root).every(c=>c.checked);const selAll=$('#selAll',root);if(selAll)selAll.checked=allOnPageChecked}});
+  const selAll=$('#selAll',root);
+  if(selAll)selAll.onclick=e=>{e.stopPropagation();const checked=selAll.checked;$$('.rowSel',root).forEach(cb=>{cb.checked=checked;const id=Number(cb.dataset.id);if(checked)S.pol.selected.add(id);else S.pol.selected.delete(id);const tr=cb.closest('tr');if(tr)tr.classList.toggle('selected',checked)});updateBulkBar()};
+}
+function polTable(){
+  const f=S.pol,rows=scopeRows();if(!rows)return;const list=filterRows(rows,f);S.list=list;const per=50,pages=Math.max(1,Math.ceil(list.length/per));if(f.page>=pages)f.page=pages-1;
+  let prem=0;for(const r of list)prem+=r[7];
+  $('#polTable').innerHTML=`<div id="bulkBar"></div>
+  <div class="row" style="justify-content:space-between;margin-bottom:8px"><span class="muted"><b style="color:var(--fg)">${fmt0(list.length)}</b> ${esc(list.length===1?t('pol.policies_one'):t('pol.policies'))} · ETB ${fmt(prem)} ${esc(t('pol.net_prem'))}</span><button class="btn sm" id="expView">${esc(t('pol.export'))}</button></div>
+  ${tableHTML(list,f.page,per,true)}
+  <div class="row" style="justify-content:space-between;margin-top:10px"><span class="muted">${esc(t('pol.page'))} ${f.page+1} ${esc(t('pol.of_pages'))} ${pages}</span><span class="row"><button class="btn sm" id="pp" ${f.page?'':'disabled'}>Previous</button><button class="btn sm" id="pn" ${f.page<pages-1?'':'disabled'}>Next</button></span></div>`;
+  bindRows($('#polTable'),true);$('#pp').onclick=()=>{f.page--;polTable()};$('#pn').onclick=()=>{f.page++;polTable()};
+  $('#expView').onclick=()=>exportRows(list,'renewals-'+slugOf(S.scope==='__all'?'all':S.scope)+'-'+TODAY_ISO+'.xlsx');
+  updateBulkBar()}
+
+function updateBulkBar(){
+  const bar=$('#bulkBar');if(!bar)return;
+  const n=S.pol.selected.size;
+  if(n===0){bar.innerHTML='';return}
+  const list=S.list;
+  const staffOpts=Object.keys(S.staff).filter(id=>S.staff[id].active!==false).map(id=>`<option value="${esc(id)}">${esc(nm(id))}</option>`).join('');
+  bar.innerHTML=`<div class="panel" style="background:var(--accent-soft);border-color:var(--accent-line);padding:10px 14px;margin:14px 0 10px">
+    <div class="row" style="justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
+      <div class="row" style="gap:8px"><b>${fmt0(n)}</b> ${esc(t('pol.selected'))}${list.length>n?` · <a href="#" id="selMatch" style="color:var(--accent)">${esc(t('pol.select_all_matching').replace('{n}',fmt0(list.length)))}</a>`:''}</div>
+      <div class="row" style="gap:6px;align-items:center">
+        <select id="bulkStatus" aria-label="${esc(t('pol.bulk_status'))}"><option value="">${esc(t('pol.bulk_status'))}…</option><option value="R">${esc(t('pol.s_R'))}</option><option value="N">${esc(t('pol.s_N'))}</option><option value="NEW">${esc(t('pol.s_NEW'))}</option><option value="reset">${esc(t('drawer.no_status'))}</option></select>
+        <select id="bulkAssign" aria-label="${esc(t('pol.bulk_assign'))}"><option value="">${esc(t('pol.bulk_assign'))}…</option><option value="__none__">${esc(t('drawer.unassigned'))}</option>${staffOpts}</select>
+        <span style="width:1px;height:18px;background:var(--accent-line);margin:0 4px" aria-hidden="true"></span>
+        <button class="btn sm" id="bulkExport">${esc(t('pol.export_sel'))}</button>
+        <button class="btn sm danger" id="bulkDelete">${esc(t('pol.delete_sel'))}</button>
+        <button class="btn sm" id="bulkClear">${esc(t('pol.clear_sel'))}</button>
+      </div>
+    </div>
+  </div>`;
+  const selMatch=$('#selMatch');if(selMatch)selMatch.onclick=e=>{e.preventDefault();for(const r of list)S.pol.selected.add(r[1]);polTable()};
+  $('#bulkStatus').onchange=async e=>{
+    const status=e.target.value;
+    if(!status)return;
+    e.target.value='';
+    let count=0;
+    for(const id of S.pol.selected){
+      const row=findRowById(id);if(!row)continue;count++;
+      const rec=recOf(row);
+      const f={s:status==='reset'?'':status,rp:status==='R'?(rec&&rec.rp||''):'',rs:status==='N'?(rec&&rec.rs>=0?rec.rs:-1):-1,as:rec&&rec.as||'',nt:rec&&rec.nt||''};
+      await saveRow(row,f);
+    }
+    toast(t('pol.bulk_applied').replace('{n}',fmt0(count)));S.pol.selected.clear();polTable()};
+  $('#bulkAssign').onchange=async e=>{
+    const v=e.target.value;if(!v)return;e.target.value='';
+    const assignee=v==='__none__'?'':v;
+    let count=0;
+    for(const id of S.pol.selected){
+      const row=findRowById(id);if(!row)continue;count++;
+      const rec=recOf(row);
+      const f={s:rec&&rec.s||'',rp:rec&&rec.rp||'',rs:rec&&rec.rs!=null?rec.rs:-1,as:assignee,nt:rec&&rec.nt||''};
+      await saveRow(row,f);
+    }
+    toast(t('pol.bulk_applied').replace('{n}',fmt0(count)));S.pol.selected.clear();polTable()};
+  $('#bulkExport').onclick=()=>{
+    const selRows=S.list.filter(r=>S.pol.selected.has(r[1]));
+    exportRows(selRows,'selected-renewals-'+TODAY_ISO+'.xlsx')};
+  $('#bulkDelete').onclick=async()=>{
+    const b=$('#bulkDelete');
+    if(b.dataset.armed){
+      const ids=[...S.pol.selected];let count=0;
+      for(const id of ids){const row=findRowById(id);await deletePolicy(id, row);count++}
+      toast(t('pol.bulk_deleted').replace('{n}',fmt0(count)));S.pol.selected.clear();polTable();
+    } else {
+      b.dataset.armed='1';b.textContent=t('pol.confirm_delete_sel').replace('{n}',fmt0(S.pol.selected.size));
+      setTimeout(()=>{b.dataset.armed='';b.textContent=t('pol.delete_sel')},3000);
+    }};
+  $('#bulkClear').onclick=()=>{S.pol.selected.clear();polTable()};
+}
+function findRowById(id){
+  /* Look in the currently-loaded scope rows for a row with this policy ID. */
+  if(!S.list)return null;
+  return S.list.find(r=>r[1]===id)||null;
+}
+
+/* ===================== Policy drawer ===================== */
+function openPolicy(r){
+  if(!r)return;const rec=recOf(r),can=canEditRow(r),m=S.meta,open=isOpen(rec);
+  const assignOpts=`<option value="">${esc(t('drawer.unassigned'))}</option>`+Object.keys(S.staff).filter(id=>S.staff[id].active!==false).map(id=>`<option value="${esc(id)}">${esc(nm(id))}</option>`).join('');
+  const dis=can?'':'disabled';
+  $('#sheet').innerHTML=`<div class="row" style="justify-content:space-between;align-items:flex-start"><div><div class="mono muted">${esc(r[0])}</div><h2>${esc(r[2])}</h2></div><button class="btn sm" id="dx" aria-label="Close">${esc(t('drawer.close'))}</button></div>
+  <div class="row">${statusPill(rec)}${chipDays(r[6],open)}${r[1]&&S.tidx.get(r[1])&&S.tidx.get(r[1]).rec.add?'<span class="pill accent">'+esc(t('drawer.added_by'))+'</span>':''}</div>
+  <dl class="facts"><dt>${esc(t('drawer.policy_id'))}</dt><dd class="mono">${r[1]}</dd><dt>${esc(t('drawer.branch'))}</dt><dd>${esc(oName(r))}</dd><dt>${esc(t('drawer.district'))}</dt><dd>${esc(dName(r))}</dd><dt>${esc(t('drawer.product'))}</dt><dd>${esc(pName(r))}</dd><dt>${esc(t('drawer.sector'))}</dt><dd>${esc(sName(r))}</dd><dt>${esc(t('drawer.end'))}</dt><dd class="num">${fd(r[6])}</dd><dt>${esc(t('drawer.premium'))}</dt><dd class="num">ETB ${fmt(r[7])}</dd><dt>${esc(t('drawer.sum'))}</dt><dd class="num">ETB ${fmt(r[8])}</dd></dl>
+  <hr>
+  <h3>${esc(t('drawer.tracking_h'))}</h3>
+  <div class="formgrid">
+    <label class="f"><span>${esc(t('drawer.status'))}</span><select id="es" ${dis}><option value="">${esc(t('drawer.no_status'))}</option><option value="R">${esc(t('pol.s_R'))}</option><option value="N">${esc(t('pol.s_N'))}</option><option value="NEW">${esc(t('pol.s_NEW'))}</option></select></label>
+    <label class="f"><span>${esc(t('drawer.assigned'))}</span><select id="ea" ${dis}>${assignOpts}</select></label>
+    <label class="f full" id="rpw"><span>${esc(t('drawer.rp'))}</span><input type="text" id="erp" inputmode="numeric" ${dis} placeholder="${esc(t('drawer.rp_ph'))}"></label>
+    <label class="f full" id="rsw"><span>${esc(t('drawer.reason'))}</span><select id="ers" ${dis}><option value="-1">${esc(t('add.reason_pick'))}</option>${m.reasons.map((x,i)=>`<option value="${i}">${esc(x.trim())}</option>`).join('')}</select></label>
+    <label class="f full"><span>${esc(t('drawer.notes'))}</span><textarea id="ent" rows="3" maxlength="400" ${dis} placeholder="${esc(t('drawer.notes_ph'))}"></textarea></label>
+  </div>
+  <div class="err" id="eerr" role="alert"></div>
+  <div class="row"><button class="btn primary" id="esave" ${dis}>${esc(t('drawer.save'))}</button><button class="btn" id="ecancel">${can?esc(t('drawer.cancel')):esc(t('drawer.close'))}</button>${rec&&rec.at?`<span class="muted" style="font-size:12px">${esc(t('drawer.last_updated'))} ${new Date(rec.at*1000).toLocaleString()}</span>`:''}</div>
+  <hr style="margin:6px 0">
+  <div class="muted" style="font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">${esc(t('drawer.policy_actions'))}</div>
+  <div class="row" style="justify-content:space-between"><div class="row"><button class="btn" id="eedit">${esc(t('drawer.edit'))}</button><button class="btn warn-outline" id="ereset">${esc(t('drawer.reset_tracking'))}</button></div><button class="btn danger" id="edelete">${esc(t('drawer.delete'))}</button></div>
+  ${can?'':'<div class="note">'+(canWrite()?esc(t('drawer.readonly_district')):esc(t('drawer.readonly')))+'</div>'}`;
+  $('#es').value=rec?rec.s||'':'';$('#ea').value=rec?rec.as||'':'';$('#erp').value=rec?rec.rp||'':'';$('#ers').value=String(rec&&rec.rs!=null?rec.rs:-1);$('#ent').value=rec?rec.nt||'':'';
+  const sync=()=>{const s=$('#es').value;$('#rpw').hidden=s!=='R';$('#rsw').hidden=s!=='N'};sync();$('#es').onchange=sync;
+  const close=()=>{$('#drawer').hidden=true};$('#dx').onclick=close;$('#ecancel').onclick=close;
+  $('#drawer').hidden=false;$('#drawer').onclick=e=>{if(e.target.id==='drawer')close()};
+  $('#esave').onclick=async()=>{
+    const f={s:$('#es').value,rp:$('#erp').value.trim(),rs:+$('#ers').value,as:$('#ea').value,nt:$('#ent').value.trim()},err=$('#eerr');err.textContent='';
+    if(f.s==='R'){f.rs=-1}else if(f.s==='N'){f.rp='';if(f.rs<0){err.textContent=t('drawer.err_reason');return}
+      if(/other/i.test(reasonTxt(f.rs))&&!f.nt){err.textContent=t('drawer.err_note');return}}else{f.rp='';f.rs=-1}  /* '' or 'NEW' — no rp/rs needed */
+    if(f.s==='R'&&f.rp&&!/^\d{6,}$/.test(f.rp)){err.textContent=t('drawer.err_rp');return}
+    $('#esave').disabled=true;
+    try{await saveRow(r,f);close();toast(t('toast.saved')+' '+r[0])}catch(e){err.textContent=t('drawer.err_save')+' '+(e&&e.message||e&&e.code||'unknown error');$('#esave').disabled=false}};
+  $('#eedit').onclick=()=>openEditForm(r);
+  $('#edelete').onclick=async()=>{
+    const b=$('#edelete');
+    if(b.dataset.armed){await deletePolicy(r[1], r);close();toast(t('toast.deleted')+' '+r[0])}
+    else{b.dataset.armed='1';b.textContent=t('drawer.confirm_delete');b.classList.add('danger');setTimeout(()=>{b.dataset.armed='';b.textContent=t('drawer.delete')},2500)}};
+  $('#ereset').onclick=async()=>{
+    const b=$('#ereset');
+    if(b.dataset.armed){await clearTracking(r[1]);close();toast(t('toast.reset')+' '+r[0])}
+    else{b.dataset.armed='1';b.textContent=t('drawer.confirm_reset');setTimeout(()=>{b.dataset.armed='';b.textContent=t('drawer.reset_tracking')},2500)}};
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#drawer').hidden=true});
+
+/* ===================== Edit policy form (in the drawer) ===================== */
+function openEditForm(r){
+  if(!r)return;const m=S.meta,rec=recOf(r),dn=dName(r),di=m.districts.findIndex(d=>d.n===dn);
+  const branches=di>=0?m.offices.filter(o=>o.d===di).map(o=>o.n):[];
+  const officeName=oName(r),productName=pName(r),sectorName=sName(r);
+  const branchIdx=m.offices.findIndex(o=>o.n===officeName);
+  const productIdx=m.products.indexOf(productName);
+  const sectorIdx=m.sectors.indexOf(sectorName);
+  const isAdded=!!(r[1]&&S.tidx.get(r[1])&&S.tidx.get(r[1]).rec.add)||LocalDB.added.has(r[1]);
+  $('#sheet').innerHTML=`<div class="row" style="justify-content:space-between;align-items:flex-start"><div><div class="mono muted">${esc(r[0])}</div><h2>${esc(t('drawer.edit'))}</h2></div><button class="btn sm" id="edx">${esc(t('drawer.close'))}</button></div>
+  <div class="note" style="margin:0">${esc(t('drawer.id_locked'))}</div>
+  <form id="editForm" autocomplete="off">
+    <div class="addgrid">
+      <label class="f"><span class="req">${esc(t('add.policy_no'))}</span><input type="text" id="ep_no" value="${esc(r[0])}" required></label>
+      <label class="f"><span>${esc(t('add.policy_id'))}</span><input type="text" id="ep_id" value="${r[1]}" disabled></label>
+      <label class="f full"><span class="req">${esc(t('add.name'))}</span><input type="text" id="ep_name" value="${esc(r[2])}" required></label>
+      <label class="f"><span class="req">${esc(t('add.district'))}</span><select id="ep_district" required>${m.districts.map(d=>`<option value="${esc(d.n)}" ${d.n===dn?'selected':''}>${esc(d.n)}</option>`).join('')}</select></label>
+      <label class="f"><span class="req">${esc(t('add.branch'))}</span><select id="ep_branch" required>${branches.map(b=>`<option value="${esc(b)}" ${b===officeName?'selected':''}>${esc(b)}</option>`).join('')}</select></label>
+      <label class="f"><span class="req">${esc(t('add.product'))}</span><select id="ep_product" required>${m.products.map((p,i)=>`<option value="${esc(p)}" ${i===productIdx?'selected':''}>${esc(p)}</option>`).join('')}</select></label>
+      <label class="f"><span class="req">${esc(t('add.sector'))}</span><select id="ep_sector" required>${m.sectors.map((s,i)=>`<option value="${esc(s)}" ${i===sectorIdx?'selected':''}>${esc(s)}</option>`).join('')}</select></label>
+      <label class="f"><span class="req">${esc(t('add.end'))}</span><input type="date" id="ep_end" value="${r[6]}" required></label>
+      <label class="f"><span class="req">${esc(t('add.premium'))}</span><input type="number" id="ep_prem" step="0.01" min="0" value="${r[7]}" required></label>
+      <label class="f"><span class="req">${esc(t('add.sum'))}</span><input type="number" id="ep_sum" step="0.01" min="0" value="${r[8]}" required></label>
+    </div>
+    <div class="err" id="ep_err" role="alert" style="margin-top:12px"></div>
+    <div class="row" style="margin-top:14px"><button class="btn primary" type="submit">${esc(t('drawer.save_edit'))}</button><button class="btn" type="button" id="ep_cancel">${esc(t('drawer.cancel'))}</button></div>
+  </form>`;
+  const close=()=>{$('#drawer').hidden=true};$('#edx').onclick=close;$('#ep_cancel').onclick=()=>openPolicy(applyEdit(r));
+  $('#drawer').hidden=false;$('#drawer').onclick=e=>{if(e.target.id==='drawer')close()};
+  function refillBranches(){
+    const newDn=$('#ep_district').value;const newDi=m.districts.findIndex(d=>d.n===newDn);
+    const newBranches=newDi>=0?m.offices.filter(o=>o.d===newDi).map(o=>o.n):[];
+    const cur=$('#ep_branch').value;$('#ep_branch').innerHTML=newBranches.map(b=>`<option value="${esc(b)}" ${b===cur?'selected':''}>${esc(b)}</option>`).join('');
+    if(!newBranches.includes(cur)&&newBranches.length)$('#ep_branch').value=newBranches[0];
+  }
+  $('#ep_district').onchange=refillBranches;
+  $('#editForm').onsubmit=async(e)=>{
+    e.preventDefault();const err=$('#ep_err');err.textContent='';
+    const no=$('#ep_no').value.trim(),name=$('#ep_name').value.trim(),district=$('#ep_district').value,branch=$('#ep_branch').value,product=$('#ep_product').value,sector=$('#ep_sector').value,end=$('#ep_end').value,prem=parseFloat($('#ep_prem').value),sum=parseFloat($('#ep_sum').value);
+    if(!no||!name||!district||!branch||!product||!sector||!end||!prem||!sum){err.textContent=t('add.err_required');return}
+    if(isNaN(prem)||prem<0){err.textContent=t('add.err_premium');return}
+    if(isNaN(sum)||sum<0){err.textContent=t('add.err_sum');return}
+    const newOi=m.offices.findIndex(o=>o.n===branch),newDi=m.districts.findIndex(d=>d.n===district),newPd=m.products.indexOf(product),newSc=m.sectors.indexOf(sector);
+    await editPolicy(r,{no,nm:name,oi:newOi,di:newDi,pd:newPd,sc:newSc,end,prem,sum});
+    close();toast(t('toast.updated')+' '+no);
+  };
+}
+
+/* ===================== Expiry alerts ===================== */
+function alertSets(rows){
+  const sets={exp:[],t7:[],t30:[],t60:[],t90:[]};
+  for(const r of rows){if(!isOpen(recOf(r)))continue;const ti=tierOf(dte(r[6]));if(ti)sets[ti].push(r)}
+  sets.exp.sort((a,b)=>a[6]<b[6]?1:-1);for(const k of['t7','t30','t60','t90'])sets[k].sort((a,b)=>a[6]<b[6]?-1:a[6]>b[6]?1:0);
+  return sets}
+function vAlerts(el){
+  if(needsLoad(el))return;
+  const rows=scopeRows(),sets=alertSets(rows),sel=S.alertTier,list=sets[sel];S.list=list;
+  const mine=list.filter(r=>{const x=recOf(r);return x&&x.as===S.uid}).length;
+  const curTier=TIERS.find(ti=>ti.k===sel);
+  el.innerHTML=`<div class="stack">
+  <div class="note">${t('alerts.note')}</div>
+  <div class="tier" role="group" aria-label="Alert windows">${TIERS.map(ti=>{const L=sets[ti.k];let p=0;for(const r of L)p+=r[7];return`<button data-t="${ti.k}" aria-pressed="${sel===ti.k}"><span class="stripe ${ti.tone}"></span><span class="c">${fmt0(L.length)}</span><span class="l">${esc(t(ti.tKey))}</span></button>`}).join('')}</div>
+  <div class="panel"><div class="row" style="justify-content:space-between"><div><h2>${esc(t(curTier.sKey))}</h2><div class="sub">${fmt0(list.length)} ${esc(t('alerts.open'))}${mine?' · '+mine+' '+esc(t('alerts.assigned_to_you')):''} · ${sel==='exp'?esc(t('alerts.most_recent')):esc(t('alerts.soonest'))}</div></div>
+    <button class="btn sm" id="expA">${esc(t('alerts.export'))}</button></div>
+    <div id="alTable" style="margin-top:8px">${tableHTML(list,0,S.alertLimit)}</div>
+    ${list.length>S.alertLimit?`<div class="row" style="justify-content:center;margin-top:10px"><button class="btn" id="more">${esc(t('alerts.show_more'))} ${Math.min(100,list.length-S.alertLimit)} ${esc(t('alerts.more_of'))} ${fmt0(list.length-S.alertLimit)} ${esc(t('alerts.remaining'))}</button></div>`:''}</div>
+  <div class="panel" id="digestPanel"></div></div>`;
+  $$('[data-t]',el).forEach(b=>b.onclick=()=>{S.alertTier=b.dataset.t;S.alertLimit=100;render()});
+  bindRows(el,false);const mo=$('#more');if(mo)mo.onclick=()=>{S.alertLimit+=100;render()};
+  $('#expA').onclick=()=>exportRows(list,'alerts-'+sel+'-'+TODAY_ISO+'.xlsx');
+  digestUI()}
+function digestUI(){
+  const box=$('#digestPanel');const ids=Object.keys(S.staff);
+  const opts=`<option value="">${esc(t('alerts.everyone'))}</option>`+(S.uid?`<option value="${esc(S.uid)}">${esc(t('pol.a_me'))}</option>`:'')+ids.filter(i=>i!==S.uid).map(i=>`<option value="${esc(i)}">${esc(nm(i))}</option>`).join('');
+  box.innerHTML=`<h2>${esc(t('alerts.digest_h'))}</h2><div class="sub">${esc(t('alerts.digest_s'))}</div>
+  <div class="note warn" style="margin:10px 0">${t('alerts.digest_warn')}</div>
+  <div class="bar" style="margin-bottom:10px"><label class="f"><span>${esc(t('alerts.include'))}</span><select id="dw">${opts}</select></label><label class="f"><span>${esc(t('alerts.recipient'))}</span><input type="email" id="dto" placeholder="name@example.com"></label></div>
+  <label class="f"><span>Digest</span><textarea class="digest" id="dtx" readonly></textarea></label>
+  <div class="row" style="margin-top:10px"><button class="btn primary" id="dcopy">${esc(t('alerts.copy'))}</button><a class="btn" id="dmail" href="#alerts" target="_blank" rel="noopener">${esc(t('alerts.mail'))}</a><span class="muted" id="dnote"></span></div>`;
+  $('#dw').value=S.digestWho;
+  const build=()=>{S.digestWho=$('#dw').value;const rows=scopeRows(),sets=alertSets(rows),who=S.digestWho;
+    const keep=r=>!who||(recOf(r)&&recOf(r).as===who);
+    const lines=[`Renewal alert digest · ${fd(TODAY_ISO)}`,`Scope: ${S.scope==='__all'?'All districts':S.scope}${who?' · Assigned to '+(who===S.uid?'me':nm(who)):''}`,''];
+    for(const ti of TIERS){const L=sets[ti.k].filter(keep);let p=0;for(const r of L)p+=r[7];
+      lines.push(`${t(ti.tKey).toUpperCase()}: ${L.length} policies, ETB ${fmt(p)}`);
+      for(const r of L.slice(0,ti.k==='exp'?10:15))lines.push(`  - ${r[0]} | ${r[2]} | ${oName(r)} | expires ${fd(r[6])} | ETB ${fmt(r[7])}`);
+      if(L.length>(ti.k==='exp'?10:15))lines.push(`  … and ${L.length-(ti.k==='exp'?10:15)} more in the app`);lines.push('')}
+    const text=lines.join('\n');$('#dtx').value=text;
+    const to=$('#dto').value.trim();$('#dmail').href='mailto:'+encodeURIComponent(to).replace('%40','@')+'?subject='+encodeURIComponent('Renewal alerts '+fd(TODAY_ISO))+'&body='+encodeURIComponent(text.slice(0,1500)+(text.length>1500?'\n…(copy the full digest from the app)':''));
+    return text};
+  build();$('#dw').onchange=build;$('#dto').oninput=build;
+  $('#dcopy').onclick=async()=>{const txt=build();try{await navigator.clipboard.writeText(txt);$('#dnote').textContent=t('toast.copied')}catch(e){$('#dtx').select();$('#dnote').textContent='Ctrl+C'}}}
+
+/* ===================== Add policy ===================== */
+function vAdd(el){
+  const m=S.meta;
+  const distOpts=m.districts.map(d=>`<option value="${esc(d.n)}">${esc(d.n)}</option>`).join('');
+  const sectorOpts=m.sectors.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('');
+  const productOpts=m.products.map(p=>`<option value="${esc(p)}">${esc(p)}</option>`).join('');
+  const reasonsOpts=m.reasons.map((x,i)=>`<option value="${i}">${esc(x.trim())}</option>`).join('');
+  const today=TODAY_ISO;
+  el.innerHTML=`<div class="stack">
+    <div class="panel">
+      <h2>${esc(t('add.h'))}</h2>
+      <div class="sub">${esc(t('add.s'))}</div>
+      <div class="note" style="margin:8px 0 14px">${esc(t('add.tip'))}</div>
+      <form id="addForm" autocomplete="off">
+        <div class="addgrid">
+          <label class="f"><span class="req">${esc(t('add.policy_no'))}</span><input type="text" id="ap_no" placeholder="1011218070000114/26" required></label>
+          <label class="f"><span class="req">${esc(t('add.policy_id'))}</span><input type="text" id="ap_id" inputmode="numeric" placeholder="100002510563" required></label>
+          <label class="f full"><span class="req">${esc(t('add.name'))}</span><input type="text" id="ap_name" placeholder="ETHIOPIAN AIRLINES GROUP" required></label>
+          <label class="f"><span class="req">${esc(t('add.district'))}</span><select id="ap_district" required><option value="">—</option>${distOpts}</select></label>
+          <label class="f"><span class="req">${esc(t('add.branch'))}</span><select id="ap_branch" required><option value="">—</option></select></label>
+          <label class="f"><span class="req">${esc(t('add.product'))}</span><select id="ap_product" required><option value="">—</option>${productOpts}</select></label>
+          <label class="f"><span class="req">${esc(t('add.sector'))}</span><select id="ap_sector" required><option value="">—</option>${sectorOpts}</select></label>
+          <label class="f"><span class="req">${esc(t('add.end'))}</span><input type="date" id="ap_end" value="${today}" required></label>
+          <label class="f"><span class="req">${esc(t('add.premium'))}</span><input type="number" id="ap_prem" step="0.01" min="0" placeholder="0.00" required></label>
+          <label class="f"><span class="req">${esc(t('add.sum'))}</span><input type="number" id="ap_sum" step="0.01" min="0" placeholder="0.00" required></label>
+          <label class="f"><span>${esc(t('add.status'))}</span><select id="ap_status"><option value="">${esc(t('add.s_blank'))}</option><option value="NEW" selected>${esc(t('add.s_NEW'))}</option><option value="R">${esc(t('add.s_R'))}</option><option value="N">${esc(t('add.s_N'))}</option></select></label>
+          <label class="f"><span>${esc(t('add.rp'))}</span><input type="text" id="ap_rp" inputmode="numeric" placeholder="ID of the new policy"></label>
+          <label class="f full" id="ap_reason_wrap"><span>${esc(t('add.reason'))}</span><select id="ap_reason"><option value="-1">${esc(t('add.reason_pick'))}</option>${reasonsOpts}</select></label>
+          <label class="f full"><span>${esc(t('add.notes'))}</span><textarea id="ap_notes" rows="3" maxlength="400" placeholder="${esc(t('add.notes_ph'))}"></textarea></label>
+        </div>
+        <div class="err" id="ap_err" role="alert" style="margin-top:12px"></div>
+        <div class="row" style="margin-top:14px">
+          <button class="btn primary" type="submit">${esc(t('add.save'))}</button>
+          <button class="btn" type="reset">${esc(t('add.reset'))}</button>
+        </div>
+      </form>
+      <div id="ap_added" style="margin-top:14px"></div>
+    </div>
+  </div>`;
+  const syncStatus=()=>{const s=$('#ap_status').value;$('#ap_reason_wrap').hidden=s!=='N';const rpEl=$('#ap_rp').parentElement;rpEl.hidden=s!=='R'};
+  syncStatus();$('#ap_status').onchange=syncStatus;
+
+  function refillBranches(){
+    const dn=$('#ap_district').value;
+    const di=dn?m.districts.findIndex(d=>d.n===dn):-1;
+    const branches=di>=0?m.offices.filter(o=>o.d===di).map(o=>o.n):[];
+    const cur=$('#ap_branch').value;
+    $('#ap_branch').innerHTML='<option value="">—</option>'+branches.map(b=>`<option value="${esc(b)}">${esc(b)}</option>`).join('');
+    if(branches.includes(cur))$('#ap_branch').value=cur;
+  }
+  $('#ap_district').onchange=refillBranches;
+
+  $('#addForm').onsubmit=async(e)=>{
+    e.preventDefault();
+    const err=$('#ap_err');err.textContent='';
+    const no=$('#ap_no').value.trim(),
+      idRaw=$('#ap_id').value.trim(),
+      id=Number(idRaw.replace(/\D/g,'')),
+      name=$('#ap_name').value.trim(),
+      district=$('#ap_district').value,
+      branch=$('#ap_branch').value,
+      product=$('#ap_product').value,
+      sector=$('#ap_sector').value,
+      end=$('#ap_end').value,
+      prem=parseFloat($('#ap_prem').value),
+      sum=parseFloat($('#ap_sum').value),
+      status=$('#ap_status').value,
+      rp=$('#ap_rp').value.trim(),
+      reason=+$('#ap_reason').value,
+      notes=$('#ap_notes').value.trim();
+
+    if(!no||!id||!name||!district||!branch||!product||!sector||!end||!prem||!sum){err.textContent=t('add.err_required');return}
+    if(!/^\d{6,}$/.test(String(id))){err.textContent=t('add.err_id');return}
+    if(isNaN(prem)||prem<0){err.textContent=t('add.err_premium');return}
+    if(isNaN(sum)||sum<0){err.textContent=t('add.err_sum');return}
+    if(status==='R'&&!rp){err.textContent=t('add.err_rp');return}
+    if(status==='R'&&rp&&!/^\d{6,}$/.test(rp)){err.textContent=t('add.err_rp');return}
+    if(status==='N'&&reason<0){err.textContent=t('add.err_reason');return}
+    if(status==='N'&&/other/i.test(reasonTxt(reason))&&!notes){err.textContent=t('add.err_note');return}
+
+    /* duplicate check across master data + added + tracked */
+    if(S.tidx.has(id)){err.textContent=t('add.err_dup');return}
+    const dn=m.districts.find(d=>d.n===district);
+    const mp=new Map();const arr=await loadDistrict(district);if(arr)for(const r of arr)mp.set(r[1],r);
+    if(mp.has(id)){err.textContent=t('add.err_dup');return}
+
+    const di=m.districts.findIndex(d=>d.n===district);
+    const oi=m.offices.findIndex(o=>o.n===branch);
+    const pd=m.products.indexOf(product);
+    const sc=m.sectors.indexOf(sector);
+    const row=[no,id,name,oi,pd,sc,end,prem,sum,di];
+
+    LocalDB.added.set(id,row);LocalDB.saveAdded();
+
+    /* Also create a tracking record so the renewal status / reason / rp are stored */
+    const rec={s:status,rp:status==='R'?rp:'',rs:status==='N'?reason:-1,as:'',nt:notes,pr:prem,pd,pn:product,by:S.uid||'',at:Math.floor(Date.now()/1000),add:1,no,nm:name,sc,end,sm:sum};
+    const key=bkey(branch,end,id);
+    S.trackDocs.set(key,{office:branch,district,month:end.slice(0,7),recs:{[String(id)]:rec}});
+    LocalDB.track.set(key,S.trackDocs.get(key));LocalDB.saveTrack();
+    rebuild();
+
+    $('#ap_added').innerHTML=`<div class="note good"><b>${esc(t('add.added_h'))}.</b> ${esc(t('add.added_s'))} <a href="#policies" class="pill accent" style="margin-left:6px">${esc(t('nav.policies'))}</a></div>`;
+    toast(t('toast.added'));
+    /* Reset the form for the next entry, but keep district+branch selected for batch entry */
+    ['ap_no','ap_id','ap_name','ap_prem','ap_sum','ap_rp','ap_notes'].forEach(k=>{const x=$('#'+k);if(x)x.value=''});
+    $('#ap_status').value='NEW';$('#ap_reason').value='-1';syncStatus();
+    $('#ap_no').focus();
+  };
+  $('#addForm').onreset=()=>{setTimeout(()=>{syncStatus();$('#ap_added').innerHTML='';/* Restore the default 'NEW' status selection on reset */const ap=document.querySelector('#ap_status');if(ap){ap.value='NEW';syncStatus();}},0)};
+}
+
+/* ===================== Reports ===================== */
+function vReports(el){
+  const by=S.reportBy,rows=report(by),tabs=[['district','reports.by_district'],['office','reports.by_office'],['month','reports.by_month'],['product','reports.by_product'],['status','reports.by_status']];
+  const T=rows.reduce((a,x)=>{a.count+=x.count;a.prem+=x.prem;a.R+=x.R;a.N+=x.N;a.NEW+=x.NEW;a.Rp+=x.Rp;return a},{count:0,prem:0,R:0,N:0,NEW:0,Rp:0});
+  el.innerHTML=`<div class="stack"><div class="row" style="justify-content:space-between"><div class="seg" role="group" aria-label="${esc(t('reports.group_by'))}">${tabs.map(([k,key])=>`<button data-by="${k}" aria-pressed="${by===k}">${esc(t(key))}</button>`).join('')}</div>
+  <span class="row"><button class="btn sm" id="rcsv">${esc(t('reports.export_csv'))}</button></span></div>
+  <div class="panel"><div class="tablewrap" style="max-height:none"><table><thead><tr><th>${esc(t('reports.col_group'))}</th><th class="r">${esc(t('reports.col_policies'))}</th><th class="r">${esc(t('reports.col_prem'))}</th><th class="r">${esc(t('reports.col_R'))}</th><th class="r">${esc(t('reports.col_N'))}</th><th class="r">${esc(t('reports.col_NEW'))}</th><th class="r">${esc(t('reports.col_open'))}</th><th class="r">${esc(t('reports.col_Rp'))}</th><th class="r">${esc(t('reports.col_rate'))}</th></tr></thead>
+  <tbody>${rows.map(x=>`<tr><td>${esc(x.label)}</td><td class="r num">${fmt0(x.count)}</td><td class="r num">${fmt(x.prem)}</td><td class="r num">${fmt0(x.R)}</td><td class="r num">${fmt0(x.N)}</td><td class="r num">${fmt0(x.NEW)}</td><td class="r num">${fmt0(x.open)}</td><td class="r num">${fmt(x.Rp)}</td><td class="r num">${x.rate==null?'–':pct(x.rate)}</td></tr>`).join('')}</tbody>
+  <tfoot><tr><td><b>${esc(t('reports.total'))}</b></td><td class="r num"><b>${fmt0(T.count)}</b></td><td class="r num"><b>${fmt(T.prem)}</b></td><td class="r num"><b>${fmt0(T.R)}</b></td><td class="r num"><b>${fmt0(T.N)}</b></td><td class="r num"><b>${fmt0(T.NEW)}</b></td><td class="r num"><b>${fmt0(T.count-T.R-T.N-T.NEW)}</b></td><td class="r num"><b>${fmt(T.Rp)}</b></td><td class="r num"><b>${T.R+T.N+T.NEW?pct((T.R+T.NEW)/(T.R+T.N+T.NEW)):'–'}</b></td></tr></tfoot></table></div>
+  <div class="muted" style="font-size:12.5px;margin-top:10px">${esc(t('reports.note'))}</div></div></div>`;
+  $$('[data-by]',el).forEach(b=>b.onclick=()=>{S.reportBy=b.dataset.by;render()});
+  $('#rcsv').onclick=()=>{const q=v=>'"'+String(v).replace(/"/g,'""')+'"';
+    const csv=[['Group','Policies','Net premium','Renewed','Not renewed','New','Open','Renewed premium','Renewal rate'].map(q).join(',')].concat(rows.map(x=>[x.label,x.count,x.prem.toFixed(2),x.R,x.N,x.NEW,x.open,x.Rp.toFixed(2),x.rate==null?'':(x.rate*100).toFixed(1)+'%'].map(q).join(','))).join('\n');
+    saveFile('renewal-report-'+by+'-'+TODAY_ISO+'.csv','\ufeff'+csv)}}
+
+/* ===================== Officers (replaces Staff) ===================== */
+function vStaff(el){
+  const ids=Object.keys(S.staff),isAdmin=true;
+  const dists=S.meta.districts.map(d=>d.n);
+  el.innerHTML=`<div class="stack"><div class="cols2 ratio-3-2">
+  <div class="panel"><h2>${esc(t('staff.h'))}</h2><div class="sub">${esc(t('staff.sub'))}</div>
+  ${ids.length?`<div class="tablewrap"><table><thead><tr><th>${esc(t('staff.col_name'))}</th><th>${esc(t('staff.col_role'))}</th><th>${esc(t('staff.col_districts'))}</th><th>${esc(t('staff.col_email'))}</th><th>${esc(t('staff.col_actions'))}</th></tr></thead><tbody>${ids.map(id=>{const s=S.staff[id];return`<tr><td>${esc(nm(id))}${id===S.uid?' <span class="pill">'+esc(t('staff.you'))+'</span>':''}</td>
+  <td>${isAdmin?`<select data-role="${esc(id)}" aria-label="${esc(t('staff.col_role'))}">${Object.entries(ROLES).map(([k,key])=>`<option value="${k}" ${s.role===k?'selected':''}>${esc(t(key))}</option>`).join('')}</select>`:esc(t(ROLES[s.role]||s.role))}</td>
+  <td>${isAdmin?`<select data-dist="${esc(id)}" aria-label="${esc(t('staff.col_districts'))}"><option value="">${esc(t('reports.all_districts'))}</option>${dists.map(d=>`<option ${(s.districts||[])[0]===d?'selected':''}>${esc(d)}</option>`).join('')}</select>`:esc((s.districts||[]).join(', ')||t('reports.all_districts'))}</td>
+  <td>${isAdmin?`<input type="email" data-mail="${esc(id)}" value="${esc(s.email||'')}" placeholder="optional" aria-label="${esc(t('staff.col_email'))}" style="max-width:200px">`:esc(s.email||'–')}</td>
+  <td>${isAdmin&&id!==S.uid?`<button class="btn sm danger" data-rm="${esc(id)}">${esc(t('staff.remove'))}</button>`:''}</td></tr>`}).join('')}</tbody></table></div>`:`<div class="empty"><b>${esc(t('staff.empty_h'))}</b>${esc(t('staff.empty'))}</div>`}
+  <div class="stack">
+  ${isAdmin?`<div class="panel"><h3>${esc(t('staff.add_h'))}</h3><div class="row"><label class="f grow"><span>${esc(t('staff.add_ph'))}</span><input type="text" id="ps" placeholder="${esc(t('staff.add_ph'))}"></label><button class="btn primary" id="psGo">${esc(t('staff.add_btn'))}</button></div><div id="pres" class="stack" style="margin-top:8px"></div></div>`:''}
+  <div class="panel"><h3>${esc(t('staff.roles_h'))}</h3><ul class="clean" style="font-size:13px;display:flex;flex-direction:column;gap:6px"><li>${t('staff.r_admin')}</li><li>${t('staff.r_manager')}</li><li>${t('staff.r_officer')}</li></ul>
+  <div class="note" style="margin-top:10px">${esc(t('brand.title'))} — ${esc(t('who.local'))}.</div></div></div></div></div>`;
+  if(!isAdmin)return;
+  const upd=(id,patch)=>S.db.collection('staff').doc(id).update(patch).then(()=>{Object.assign(S.staff[id]||(S.staff[id]={active:true}),patch);scheduleRender()}).catch(e=>toast(t('staff.could_not')));
+  $$('[data-role]',el).forEach(s=>s.onchange=()=>upd(s.dataset.role,{role:s.value}));
+  $$('[data-dist]',el).forEach(s=>s.onchange=()=>upd(s.dataset.dist,{districts:s.value?[s.value]:[]}));
+  $$('[data-mail]',el).forEach(s=>s.onchange=()=>upd(s.dataset.mail,{email:s.value.trim()}));
+  $$('[data-rm]',el).forEach(b=>b.onclick=()=>{
+    if(b.dataset.armed){S.db.collection('staff').doc(b.dataset.rm).delete().then(()=>{delete S.staff[b.dataset.rm];scheduleRender()}).catch(e=>toast(t('staff.could_not')))}
+    else{b.dataset.armed='1';b.textContent=t('staff.confirm');setTimeout(()=>{b.dataset.armed='';b.textContent=t('staff.remove')},2500)}
+  });
+  const ps=$('#ps');const psGo=$('#psGo');
+  function addOfficer(){
+    const name=ps.value.trim();if(!name)return;
+    const id='officer-'+slugOf(name)+'-'+Date.now().toString(36);
+    S.db.collection('staff').doc(id).set({name,role:'officer',districts:[],email:'',active:true}).then(()=>{S.staff[id]={name,role:'officer',districts:[],email:'',active:true};ps.value='';toast(t('toast.added'));scheduleRender()}).catch(e=>toast(t('staff.could_not')));
+  }
+  psGo.onclick=addOfficer;
+  ps.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();addOfficer()}};
+}
+
+/* ===================== Excel migration ===================== */
+async function saveFile(name,data){
+  if(!S.dlCap){toast('File saving is not available in this view.');return}
+  try{await S.dlCap.save({filename:name,data});toast(t('toast.saved')+' '+name)}catch(e){if(e&&e.code==='declined')return;toast('Could not save the file ('+(e&&e.code||'error')+').')}}
+function sheetRow(r){const rec=recOf(r);return[r[0],r[1],r[2],oName(r),dName(r),pName(r),sName(r),new Date(r[6]+'T12:00:00'),r[7],r[8],rec&&rec.s==='R'?'Renewed':rec&&rec.s==='N'?'Not renewed':rec&&rec.s==='NEW'?'New':'',rec&&rec.rp||'',rec&&rec.s==='N'?reasonTxt(rec.rs):'',rec&&rec.as?nm(rec.as):'',rec&&rec.nt||'']}
+async function exportRows(list,name){
+  if(typeof XLSX==='undefined'){toast('The Excel library did not load. Check your connection and reload.');return}
+  if(!list.length){toast('Nothing to export.');return}
+  const head=['POLICY_NO','POLICY_ID','NAME','OFFICE_NAME','DISTRICT','PRODUCT_TYPE','SECTOR','INSR_END','NET_PREMIUM','SUM_INSURED','RENEWAL_STATUS','RENEWAL POLICY ID','REASON FOR NON RENEWAL','ASSIGNED_TO','NOTES'];
+  const ws=XLSX.utils.aoa_to_sheet([head].concat(list.map(sheetRow)),{cellDates:true});
+  ws['!cols']=[22,14,36,22,14,34,18,12,14,16,16,16,30,18,30].map(w=>({wch:w}));
+  const range=XLSX.utils.decode_range(ws['!ref']);for(let R=1;R<=range.e.r;R++){const d=ws[XLSX.utils.encode_cell({r:R,c:7})];if(d)d.z='dd-mmm-yy';for(const c of[8,9]){const x=ws[XLSX.utils.encode_cell({r:R,c})];if(x)x.z='#,##0.00'}}
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'RENEWAL LIST');
+  const buf=XLSX.write(wb,{type:'array',bookType:'xlsx'});await saveFile(name,new Blob([buf]))}
+function parseEnd(v){
+  if(v instanceof Date&&!isNaN(v)){const d=new Date(v.getTime()+12*36e5);return isoOf(d)}
+  if(typeof v==='number'&&v>20000&&v<80000){const d=new Date(Math.round((v-25569)*864e5)+12*36e5);return d.toISOString().slice(0,10)}
+  const s=String(v||'').trim();let m=s.match(/^(\d{1,2})[-\/ ]([A-Za-z]{3})[a-z]*[-\/ ](\d{2,4})$/);
+  if(m){const mi=MN.findIndex(x=>x.toLowerCase()===m[2].toLowerCase());if(mi>=0){let y=+m[3];if(y<100)y+=2000;return y+'-'+pad(mi+1)+'-'+pad(+m[1])}}
+  m=s.match(/^(\d{4})-(\d{2})-(\d{2})/);return m?m[0]:null}
+async function readWorkbook(file){
+  const wb=XLSX.read(await file.arrayBuffer(),{type:'array',cellDates:true});const out=[],sheets=[];
+  for(const name of wb.SheetNames){const rows=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,raw:true,defval:null,blankrows:false});
+    let h=-1;for(let i=0;i<Math.min(6,rows.length);i++){const up=rows[i].map(x=>String(x==null?'':x).trim().toUpperCase());if(up.includes('POLICY_ID')&&up.includes('INSR_END')){h=i;break}}
+    if(h<0)continue;const head=rows[h].map(x=>String(x==null?'':x).trim().toUpperCase()),ix=k=>head.indexOf(k);
+    const c={no:ix('POLICY_NO'),id:ix('POLICY_ID'),nm:ix('NAME'),of:ix('OFFICE_NAME'),di:ix('DISTRICT'),pr:ix('PRODUCT_TYPE'),sc:ix('SECTOR'),en:ix('INSR_END'),np:ix('NET_PREMIUM'),si:ix('SUM_INSURED'),st:ix('RENEWAL_STATUS'),rp:ix('RENEWAL POLICY ID'),rs:ix('REASON FOR NON RENEWAL')};
+    let n=0;for(let i=h+1;i<rows.length;i++){const x=rows[i];if(!x||x[c.id]==null)continue;n++;
+      out.push({sheet:name,line:i+1,no:String(x[c.no]??'').trim(),id:Number(String(x[c.id]).replace(/\D/g,'')),nm:String(x[c.nm]??'').trim(),office:String(x[c.of]??'').trim(),dist:String(x[c.di]??'').trim(),prod:String(x[c.pr]??'').trim(),sec:String(x[c.sc]??'').trim(),end:parseEnd(x[c.en]),prem:+x[c.np]||0,sum:+x[c.si]||0,st:String(x[c.st]??'').trim().toLowerCase(),rp:String(x[c.rp]??'').trim(),rs:String(x[c.rs]??'').trim()})}
+    sheets.push(name+' ('+fmt0(n)+' rows)')}
+  return{rows:out,sheets}}
+async function planImport(file,setMsg){
+  const{rows,sheets}=await readWorkbook(file);const m=S.meta;
+  if(!rows.length)return{error:t('data.no_sheet')};
+  const plan={sheets,total:rows.length,updates:[],adds:[],same:0,skipped:0,errors:[]};
+  const dset=[...new Set(rows.map(r=>r.dist))];const maps={};
+  for(const d of dset){const dn=m.districts.find(x=>x.n.toLowerCase()===d.toLowerCase());if(!dn)continue;setMsg(t('data.checking')+' '+dn.n+'…');const arr=await loadDistrict(dn.n);const mp=new Map();for(const r of arr)mp.set(r[1],r);maps[d]=mp}
+  const seen=new Set();
+  for(const x of rows){
+    const dn=m.districts.find(d=>d.n.toLowerCase()===x.dist.toLowerCase());
+    if(!x.id||!x.end||!dn||!x.office){if(plan.errors.length<200)plan.errors.push(`${x.sheet} row ${x.line}: ${!dn?'unknown district "'+x.dist+'"':!x.end?'unreadable INSR_END':'missing policy ID or branch'}`);continue}
+    if(seen.has(x.id)){continue}seen.add(x.id);
+    const s=x.st==='renewed'?'R':x.st==='not renewed'?'N':x.st==='new'?'NEW':'';
+    let rs=-1,nt='';if(s==='N'&&x.rs){rs=m.reasons.findIndex(z=>z.trim().toLowerCase()===x.rs.toLowerCase());if(rs<0)nt='Reason: '+x.rs}
+    const exist=maps[x.dist]&&maps[x.dist].get(x.id),cur=S.tidx.get(x.id);
+    if(exist||cur){
+      if(!s){plan.skipped++;continue}
+      const c=cur&&cur.rec;if(c&&c.s===s&&(c.rp||'')===(s==='R'?x.rp:'')&&(c.rs??-1)===(s==='N'?rs:-1)){plan.same++;continue}
+      plan.updates.push({x,dn,s,rs,nt})
+    }else plan.adds.push({x,dn,s,rs,nt})}
+  return plan}
+async function commitImport(plan,setProg){
+  const m=S.meta,groups=new Map();let n=0;const tot=plan.updates.length+plan.adds.length;
+  const put=(it,isAdd)=>{const x=it.x,key=bkey(x.office,x.end,x.id);let g=groups.get(key);if(!g){g={office:x.office,district:it.dn.n,month:x.end.slice(0,7),recs:{}};groups.set(key,g)}
+    const pd=m.products.indexOf(x.prod),old=S.tidx.get(x.id);
+    const rec=Object.assign({},old?old.rec:{},{s:it.s,rp:it.s==='R'?x.rp:'',rs:it.s==='N'?it.rs:-1,as:old?old.rec.as||'':'',nt:(old&&old.rec.nt)||it.nt||'',pr:x.prem,pd,by:S.uid||'',at:Math.floor(Date.now()/1000)});
+    if(pd<0)rec.pn=x.prod;
+    if(isAdd){rec.add=1;rec.no=x.no;rec.nm=x.nm;rec.sc=m.sectors.indexOf(x.sec);rec.end=x.end;rec.sm=x.sum}
+    g.recs[String(x.id)]=rec;n++};
+  for(const it of plan.updates)put(it,false);for(const it of plan.adds)put(it,true);
+  let done=0;const keys=[...groups.keys()];
+  for(const k of keys){const g=groups.get(k);await saveBucket(k,g.office,g.district,g.month,g.recs);done++;setProg(done/keys.length)}
+  return n}
+function vData(el){
+  const admin=true,mgr=true;
+  el.innerHTML=`<div class="stack">
+  <div class="panel"><h2>${esc(t('data.validation_h'))}</h2><div class="sub">${esc(t('data.validation_s'))}</div><div id="vbox"></div></div>
+  <div class="cols2">
+  <div class="panel"><h2>${esc(t('data.import_h'))}</h2><div class="sub">${esc(t('data.import_s'))}</div>
+    ${mgr?`<label class="f">${esc(t('data.import_pick'))}<input type="file" id="imf" accept=".xlsx,.xls,.csv"></label><div id="imo" class="stack" style="margin-top:12px"></div>`:'<div class="note">'+esc(t('data.import_s'))+'</div>'}
+  </div>
+  <div class="panel"><h2>${esc(t('data.export_h'))}</h2><div class="sub">${esc(t('data.export_s'))}</div>
+    <div class="stack"><label class="f"><span>${esc(t('data.export_what'))}</span><select id="exw"><option value="scope">${esc(t('data.export_scope'))}</option><option value="tracked">${esc(t('data.export_tracked'))}</option></select></label>
+    <div class="row"><button class="btn primary" id="exgo">${esc(t('data.export_btn'))}</button><span class="muted" id="exm"></span></div></div></div>
+  <div class="panel"><h2>${esc(t('data.backup_h'))}</h2><div class="sub">${esc(t('data.backup_s'))}</div>
+    <div class="row"><button class="btn" id="bkgo">${esc(t('data.backup_btn'))}</button><span class="muted">${fmt0(S.tidx.size)} ${esc(t('data.v_tracked').toLowerCase())} · ${Object.keys(S.staff).length} ${esc(Object.keys(S.staff).length===1?t('staff.one'):t('data.v_officers').toLowerCase())} · ${LocalDB.added.size} ${esc(t('data.v_added').toLowerCase())}</span></div>
+    ${admin?`<hr style="margin:14px 0"><label class="f">${esc(t('data.restore_label'))}<input type="file" id="rsf" accept=".json"></label><div id="rso" class="stack" style="margin-top:10px"></div>`:''}</div>
+  <div class="panel"><h2>${esc(t('data.migrated_h'))}</h2><div class="sub">${esc(t('data.migrated_sub'))}</div><ul class="clean" style="font-size:13px;display:flex;flex-direction:column;gap:6px">
+    <li><b>${fmt0(S.meta.agg.reduce((a,x)=>a+x[4],0))}</b> ${esc(t('data.migrated_1'))} ${S.meta.districts.length} ${esc(t('data.migrated_2'))} ${S.meta.offices.length} ${esc(t('data.migrated_3'))}</li>
+    <li><b>205</b> ${esc(t('data.migrated_4'))}</li>
+    <li><b>${S.meta.reasons.length}</b> ${esc(t('data.migrated_5'))}</li></ul></div>
+  </div>
+  <div class="panel" id="deletedPanel" ${LocalDB.deleted.size===0?'hidden':''}><h2>${esc(t('data.restore_h'))}</h2><div class="sub">${esc(t('data.restore_s').replace('{n}', fmt0(LocalDB.deleted.size)))}</div>
+    <div id="deletedList"></div>
+  </div>
+  </div>`;
+  /* Validation panel: lightweight, runs on demand */
+  const vbox=$('#vbox');
+  vbox.innerHTML='<div class="muted">Checking…</div>';
+  setTimeout(()=>vDataValidation(vbox),30);
+  /* Restore-deleted list — render immediately so the panel is populated. */
+  renderDeletedList();
+
+  $('#exgo').onclick=async()=>{const w=$('#exw').value,msg=$('#exm');msg.textContent='Preparing…';
+    try{if(w==='scope'){if(S.scope==='__all'&&!S.allWanted){msg.textContent='Choose one district in the selector first, or load all districts from the Policy register.';return}
+        for(const n of scopeNames())await loadDistrict(n);const rows=scopeRows();await exportRows(rows,'renewal-list-'+slugOf(S.scope==='__all'?'all':S.scope)+'-'+TODAY_ISO+'.xlsx')}
+      else{const ds=[...new Set([...S.tidx.values()].map(c=>c.district))];const list=[];for(const d of ds){await loadDistrict(d);for(const r of rowsFor(d)){if(S.tidx.has(r[1]))list.push(r)}}await exportRows(list,'tracked-renewals-'+TODAY_ISO+'.xlsx')}
+      msg.textContent=''}catch(e){msg.textContent='Export failed: '+(e.message||'error')}};
+  $('#bkgo').onclick=()=>{const o={app:'insurance-renewal-manager',version:3,exportedAt:new Date().toISOString(),staff:S.staff,track:Object.fromEntries(S.trackDocs),added:Object.fromEntries(LocalDB.added),edits:Object.fromEntries([...LocalDB.edits.entries()].map(([k,v])=>[String(k),v])),deleted:[...LocalDB.deleted],deletedRows:Object.fromEntries([...LocalDB.deletedRows.entries()].map(([k,v])=>[String(k),v]))};saveFile('renewal-backup-'+TODAY_ISO+'.json',JSON.stringify(o))};
+  if(mgr){$('#imf').onchange=async e=>{const f=e.target.files[0],out=$('#imo');if(!f)return;
+      if(typeof XLSX==='undefined'){out.innerHTML='<div class="note bad">The Excel library did not load. Check your connection and reload.</div>';return}
+      out.innerHTML='<div class="muted" id="imm">'+esc(t('data.reading'))+'</div>';
+      try{const plan=await planImport(f,txt=>{const x=$('#imm');if(x)x.textContent=txt});
+        if(plan.error){out.innerHTML=`<div class="note bad">${esc(plan.error)}</div>`;return}
+        const ch=plan.updates.length+plan.adds.length;
+        out.innerHTML=`<div class="note"><b>${fmt0(plan.total)}</b> rows read from ${esc(plan.sheets.join(', '))}.</div><table><tbody>
+          <tr><td>${esc(t('data.updates'))}</td><td class="r num"><b>${fmt0(plan.updates.length)}</b></td></tr>
+          <tr><td>${esc(t('data.adds'))}</td><td class="r num"><b>${fmt0(plan.adds.length)}</b></td></tr>
+          <tr><td>${esc(t('data.same'))}</td><td class="r num">${fmt0(plan.same)}</td></tr>
+          <tr><td>${esc(t('data.skipped'))}</td><td class="r num">${fmt0(plan.skipped)}</td></tr>
+          <tr><td>${esc(t('data.problems'))}</td><td class="r num">${fmt0(plan.errors.length)}</td></tr>
+          ${plan.errors.length?`<tr><td colspan="2"><details><summary>${esc(t('data.show_problems'))}</summary><ul class="clean" style="font-size:12.5px">${plan.errors.slice(0,20).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></details></td></tr>`:''}
+          </tbody></table>
+          <div class="row" style="margin-top:10px"><button class="btn primary" id="imgo" ${ch?'':'disabled'}>${esc(t('data.apply_btn'))} ${fmt0(ch)} ${esc(t('data.changes'))}</button><span class="muted" id="imp"></span></div><div class="prog" id="impb" hidden><div></div></div>`;
+        $('#imgo').onclick=async()=>{$('#imgo').disabled=true;$('#impb').hidden=false;try{const n=await commitImport(plan,p=>{$('#impb>div').style.width=(p*100)+'%'});$('#imp').textContent=t('data.done')+' '+fmt0(n)+' '+t('data.records_saved');toast(t('data.import_complete'))}catch(er){$('#imp').textContent=t('data.stopped')+' '+(er.message||er.code)+'. '+t('data.records_kept');$('#imgo').disabled=false}}
+      }catch(er){out.innerHTML=`<div class="note bad">${esc(t('data.could_not'))} ${esc(er.message||er)}</div>`}}}
+  if(admin){$('#rsf').onchange=async e=>{const f=e.target.files[0],out=$('#rso');if(!f)return;
+      try{const o=JSON.parse(await f.text());if(o.app!=='insurance-renewal-manager')throw new Error(t('data.not_backup'));
+        const tk=Object.keys(o.track||{}),sk=Object.keys(o.staff||{}),ak=Object.keys(o.added||{}),ek=Object.keys(o.edits||{}),dk=(o.deleted||[]).length,drk=Object.keys(o.deletedRows||{});
+        out.innerHTML=`<div class="note warn">${esc(t('data.restore_warn'))} ${tk.length} ${esc(t('data.restore_groups'))} · ${sk.length} ${esc(t('data.restore_staff'))}${dk?` · ${dk} ${esc(t('data.restore_deleted').toLowerCase())}`:''}${ek.length?` · ${ek.length} ${esc(t('data.restore_edits').toLowerCase())}`:''}</div><div class="row"><button class="btn primary" id="rsgo">${esc(t('data.restore_btn'))}</button><span class="muted" id="rsm"></span></div>`;
+        $('#rsgo').onclick=async()=>{$('#rsgo').disabled=true;try{let i=0;for(const k of tk){await S.db.collection('track').doc(k).set(o.track[k]);$('#rsm').textContent=(++i)+' / '+tk.length}
+          for(const k of sk)await S.db.collection('staff').doc(k).set(o.staff[k]);
+          if(o.added)for(const [k,v] of Object.entries(o.added)){LocalDB.added.set(k,v);LocalDB.saveAdded()}
+          if(o.edits)for(const [k,v] of Object.entries(o.edits)){LocalDB.edits.set(Number(k),v);LocalDB.saveEdits()}
+          if(o.deleted)for(const id of o.deleted){LocalDB.deleted.add(Number(id));LocalDB.saveDeleted()}
+          if(o.deletedRows)for(const [k,v] of Object.entries(o.deletedRows)){LocalDB.deletedRows.set(Number(k),v);LocalDB.saveDeletedRows()}
+          rebuild();
+          $('#rsm').textContent=t('data.done');toast(t('data.import_complete'))}catch(er){$('#rsm').textContent=t('data.stopped')+' '+(er.message||er.code);$('#rsgo').disabled=false}}}
+      catch(er){out.innerHTML=`<div class="note bad">${esc(er.message||t('data.could_not'))}</div>`}}}}
+function vDataValidation(box){
+  const m=S.meta;
+  /* lightweight integrity check (uses meta + what's been loaded already) */
+  const checks=[];
+  const distCount=m.districts.length;
+  let policyTotal=0;for(const d of m.districts)policyTotal+=d.count;
+  const officeSet=new Set(m.offices.map(o=>o.n));
+  const officeD=m.offices.every(o=>o.d>=0&&o.d<m.districts.length);
+  const reasonsCount=m.reasons.length;
+  const monthsCount=m.months.length;
+  const aggRows=m.agg.length;
+
+  /* Agg check: for each district, count the records in agg and compare to meta.districts[i].count */
+  const perDistAgg=m.districts.map((d,i)=>{let c=0,p=0;for(const a of m.agg)if(a[0]===i){c+=a[4];p+=a[5]}return{d,i,c,p}});
+  const mismatchedAgg=perDistAgg.filter(x=>x.c!==m.districts[x.i].count);
+
+  const card=(cls,l,v,d)=>`<div class="vcard ${cls}"><div class="l">${l}</div><div class="v">${v}</div><div class="d">${d}</div></div>`;
+
+  box.innerHTML=`<div class="vgrid">
+    ${card(mismatchedAgg.length===0?'ok':'warn',t('data.v_districts'),fmt0(distCount),mismatchedAgg.length===0?'All districts have files':`${mismatchedAgg.length} district(s) aggregate count mismatch`)}
+    ${card(officeD?'ok':'bad',t('data.v_offices'),fmt0(m.offices.length),officeD?'All branches mapped to a district':'Some branches lack a district mapping')}
+    ${card('ok',t('data.v_policies'),fmt0(policyTotal),'Across all districts (per meta.json)')}
+    ${card(aggRows>0?'ok':'bad',t('data.v_agg_rows'),fmt0(aggRows),aggRows>0?'Pre-computed aggregates present':'Missing — dashboard charts may be empty')}
+    ${card('ok',t('data.v_tracked'),fmt0(S.tidx.size),'Renewal statuses stored in this browser')}
+    ${card(LocalDB.deleted.size===0?'ok':'warn',t('data.v_deleted'),fmt0(LocalDB.deleted.size),LocalDB.deleted.size===0?'No deleted policies':`${LocalDB.deleted.size} policy/policies deleted — restore from below`)}
+    ${card('ok',t('data.v_added'),fmt0(LocalDB.added.size),'Manually added policies in this browser')}
+    ${card('ok',t('data.v_officers'),fmt0(Object.keys(S.staff).length),'Officers configured in this browser')}
+    ${card(monthsCount>=12?'ok':'warn','Months',fmt0(monthsCount),monthsCount>=12?'Full 12-month window':'Partial month window')}
+    ${card(reasonsCount>=5?'ok':'warn','Reasons',fmt0(reasonsCount),reasonsCount>=5?'Non-renewal reasons configured':'Few reasons configured')}
+  </div>
+  ${mismatchedAgg.length?`<div class="note warn" style="margin-top:10px"><b>Aggregate mismatch in:</b> ${esc(mismatchedAgg.map(x=>m.districts[x.i].n+' ('+fmt0(x.c)+' vs '+fmt0(m.districts[x.i].count)+')').join(', '))}.<br>This only affects the dashboard and report totals. The per-policy register is unaffected — open a district to see its policies.</div>`:''}
+  <div class="muted" style="font-size:12px;margin-top:8px">Validation runs from meta.json. To check raw rows in a district, open it from the Policy register.</div>`;
+}
+
+/* ===================== Restore deleted list ===================== */
+function renderDeletedList(){
+  const box=$('#deletedList');if(!box)return;
+  const panel=$('#deletedPanel');
+  const ids=[...LocalDB.deleted];
+  if(ids.length===0){if(panel)panel.hidden=true;box.innerHTML='';return}
+  if(panel)panel.hidden=false;
+  /* Build a small table of deleted policies using their captured metadata. */
+  const rows=[];
+  for(const id of ids){
+    const meta=LocalDB.deletedRows.get(id)||{};
+    const no=meta.row?meta.row[0]:'—';
+    const nm=meta.row?meta.row[2]:(meta.track&&meta.track.rec?meta.track.rec.nm:'—');
+    const district=meta.track?meta.track.district:(meta.row?(typeof meta.row[9]==='number'&&S.meta.districts[meta.row[9]]?S.meta.districts[meta.row[9]].n:meta.row[9]):'—');
+    const branch=meta.track?meta.track.office:(meta.row?(typeof meta.row[3]==='number'&&S.meta.offices[meta.row[3]]?S.meta.offices[meta.row[3]].n:meta.row[3]):'—');
+    const end=meta.row?meta.row[6]:(meta.track&&meta.track.rec?meta.track.rec.end:'—');
+    const prem=meta.row?meta.row[7]:(meta.track&&meta.track.rec?meta.track.rec.pr:0);
+    const deletedAt=meta.deletedAt?new Date(meta.deletedAt).toLocaleDateString():'—';
+    rows.push(`<tr>
+      <td class="mono">${esc(no)}</td>
+      <td>${esc(nm)}</td>
+      <td>${esc(district)}</td>
+      <td>${esc(branch)}</td>
+      <td class="num">${end&&end.length>=10?fd(end):end}</td>
+      <td class="r num">${fmt(prem)}</td>
+      <td class="muted" style="font-size:11.5px">${deletedAt}</td>
+      <td><button class="btn sm" data-restore="${id}">${esc(t('data.restore_one'))}</button></td>
+    </tr>`);
+  }
+  box.innerHTML=`<div class="row" style="justify-content:space-between;margin-bottom:8px">
+    <span class="muted"><b style="color:var(--fg)">${fmt0(ids.length)}</b> ${esc(t('data.restore_count').split('|')[0])}</span>
+    <div class="row"><button class="btn sm" id="restoreAll">${esc(t('data.restore_all'))}</button></div>
+  </div>
+  <div class="tablewrap" style="max-height:360px"><table><thead><tr>
+    <th>${esc(t('pol.col_no'))}</th><th>${esc(t('pol.col_insured'))}</th><th>${esc(t('drawer.district'))}</th><th>${esc(t('drawer.branch'))}</th><th>${esc(t('drawer.end'))}</th><th class="r">${esc(t('drawer.premium'))}</th><th>${esc(t('data.deleted_on'))}</th><th></th>
+  </tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
+  $('#restoreAll').onclick=async()=>{await restoreAllDeleted();toast(t('data.restore_done'));renderDeletedList();scheduleRender()};
+  $$('[data-restore]',box).forEach(b=>b.onclick=async()=>{const id=Number(b.dataset.restore);await restorePolicy(id);toast(t('data.restore_one_done'));renderDeletedList();scheduleRender()});
+}
+
+/* ===================== Routing & init ===================== */
+function route(){const h=location.hash.slice(1);S.view=VIEWS.some(v=>v[0]===h)?h:'dashboard';if(S.view!=='alerts')S.alertLimit=100;
+  if(S.meta){if(S.view==='policies'||S.view==='alerts')ensureScope();render();
+    requestAnimationFrame(()=>{const a=document.querySelector('.nav a[aria-current="page"]');if(a)a.scrollIntoView({block:'nearest',inline:'nearest'})});
+  }}
+window.addEventListener('hashchange',route);
+$('#scope').onchange=e=>{S.scope=e.target.value;store.set('irm.scope',S.scope);S.pol.page=0;S.pol.office='';S.loadErr='';ensureScope();render()};
+
+/* Export to PDF button — opens the browser's print dialog with "Save as PDF" pre-selected. */
+/* The print stylesheet shows the EIC logo + report name at the top of every page. */
+$('#pdfBtn').onclick=()=>{
+  updatePrintHeader();
+  /* Give the layout a tick to settle before the browser snapshots it. */
+  requestAnimationFrame(()=>requestAnimationFrame(()=>window.print()));
+};
+
+/* Language & theme toggles */
+$('#langToggle').onclick=()=>{LANG=LANG==='en'?'am':'en';try{localStorage.setItem('irm.lang',LANG)}catch(e){}applyLang();if(S.meta)render();
+  requestAnimationFrame(()=>{const a=document.querySelector('.nav a[aria-current="page"]');if(a)a.scrollIntoView({block:'nearest',inline:'nearest'})});
+};
+$('#themeToggle').onclick=()=>{
+  const cur=document.documentElement.getAttribute('data-theme')||'auto';
+  const next=cur==='auto'?'light':cur==='light'?'dark':'auto';
+  document.documentElement.setAttribute('data-theme',next);
+  try{localStorage.setItem('irm.theme',next)}catch(e){}
+  $('#themeLabel').textContent=next==='auto'?'Auto':next==='light'?'☀':'☾';
+};
+
+async function init(){
+  /* restore theme + lang */
+  const savedTheme=store.get('irm.theme')||'auto';
+  document.documentElement.setAttribute('data-theme',savedTheme);
+  $('#themeLabel').textContent=savedTheme==='auto'?'Auto':savedTheme==='light'?'☀':'☾';
+  applyLang();
+
+  S.view=VIEWS.some(v=>v[0]===location.hash.slice(1))?location.hash.slice(1):'dashboard';
+  $('#view').innerHTML='<div class="panel empty"><b>Loading renewal portfolio…</b></div>';
+  LocalDB.load();
+
+  /* Use the local backend instead of Claude.ai APIs */
+  S.db=LocalDB;
+  S.userCap=LocalUser;
+  S.dlCap=LocalDL;
+  S.uid='local-admin';
+  S.isOwner=true;
+  S.isEditor=true;
+  S.dataWrite=true;
+
+  /* If no officers exist, seed the local-admin as an administrator */
+  if(!LocalDB.staff.has('local-admin')){
+    LocalDB.staff.set('local-admin',{name:'You',role:'admin',districts:[],email:'',active:true});
+    LocalDB.saveStaff();
+  }
+
+  /* meta is required by almost everything — fetch first */
+  try{S.meta=await fetch('data/meta.json').then(r=>r.json())}
+  catch(e){$('#view').innerHTML='<div class="panel empty"><b>Could not load the portfolio</b>Reload the page to try again.</div>';return}
+
+  const saved=store.get('irm.scope');
+  S.scope=saved&&(saved==='__all'||S.meta.districts.some(d=>d.n===saved))?saved:(S.meta.districts.find(d=>d.n==='NEKEMTE')?'NEKEMTE':S.meta.districts[0].n);
+
+  /* Pull staff + track from the local store, in the same shape the original onSnapshot callbacks produced */
+  S.staff=Object.fromEntries(LocalDB.staff.entries());
+  S.profiles={'local-admin':{name:'You'}};
+  S.trackDocs=new Map(LocalDB.track.entries());
+  rebuild();
+  S.staffReady=true;S.trackReady=true;S.trackErr=null;
+
+  fillScope();
+  render();
+  ensureScope();
+}
+init();
+})();
+</script>
+<script>
+/* ============================================================
+ * Progressive Web App: service worker registration, install
+ * prompt, network status dot, and update banner.
+ * ============================================================ */
+(function(){
+  'use strict';
+
+  /* ---------- Network status dot ---------- */
+  const netDot = document.getElementById('netStatus');
+  function updateNetDot(){
+    if(!netDot) return;
+    if(navigator.onLine){
+      netDot.classList.remove('offline','uncached');
+      netDot.title = 'Online';
+    } else {
+      netDot.classList.add('offline');
+      netDot.classList.remove('uncached');
+      netDot.title = 'Offline';
+    }
+  }
+  if(netDot){
+    updateNetDot();
+    window.addEventListener('online',  ()=>{updateNetDot(); if(window.toast) window.toast(t('pwa.online')); /* Re-render the contextual banner now that we're back online */ if(window.setBanner) setBanner()});
+    window.addEventListener('offline', ()=>{updateNetDot(); if(window.toast) window.toast(t('pwa.offline')); if(window.setBanner) setBanner()});
+  }
+
+  /* ---------- Install button (Chrome/Android/Edge desktop) ---------- */
+  let deferredPrompt = null;
+  const installBtn = document.getElementById('installBtn');
+  window.addEventListener('beforeinstallprompt', (e)=>{
+    e.preventDefault();
+    deferredPrompt = e;
+    if(installBtn) installBtn.hidden = false;
+  });
+  if(installBtn){
+    installBtn.addEventListener('click', async ()=>{
+      if(!deferredPrompt) return;
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if(outcome === 'accepted' && window.toast) window.toast(t('pwa.installed'));
+      deferredPrompt = null;
+      installBtn.hidden = true;
+    });
+  }
+  window.addEventListener('appinstalled', ()=>{
+    if(installBtn) installBtn.hidden = true;
+    if(window.toast) window.toast(t('pwa.installed'));
+  });
+
+  /* Detect iOS (no beforeinstallprompt) — show a hint after a few seconds */
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  if(isIOS && !window.matchMedia('(display-mode: standalone)').matches && !window.navigator.standalone){
+    setTimeout(()=>{
+      if(window.toast) window.toast(t('pwa.ios_hint'));
+    }, 5000);
+  }
+
+  /* ---------- Service worker registration + update banner ---------- */
+  if('serviceWorker' in navigator){
+    const updateBanner = document.getElementById('updateBanner');
+    const updateBtn = document.getElementById('updateBtn');
+    let refreshing = false;
+
+    window.addEventListener('load', ()=>{
+      navigator.serviceWorker.register('./sw.js').then((reg)=>{
+        // Check for updates every 60 minutes while the page is open.
+        setInterval(()=>{ try { reg.update() } catch(e){} }, 60 * 60 * 1000);
+
+        reg.addEventListener('updatefound', ()=>{
+          const newWorker = reg.installing;
+          if(!newWorker) return;
+          newWorker.addEventListener('statechange', ()=>{
+            // If a new SW has finished installing but the old one is still
+            // running, show the update banner.
+            if(newWorker.state === 'installed' && navigator.serviceWorker.controller){
+              if(updateBanner) updateBanner.hidden = false;
+            }
+            // If a new SW took over (no controller means first install), no banner.
+          });
+        });
+      }).catch((err)=>{
+        console.warn('[sw] registration failed:', err);
+      });
+    });
+
+    if(updateBtn){
+      updateBtn.addEventListener('click', ()=>{
+        if(refreshing) return;
+        refreshing = true;
+        try{ navigator.serviceWorker.controller && navigator.serviceWorker.controller.postMessage('skipWaiting'); }catch(e){}
+        setTimeout(()=>window.location.reload(), 300);
+      });
+    }
+
+    // When the new SW takes over (fires on next navigation/reload), reload
+    // automatically if the user hasn't already.
+    navigator.serviceWorker.addEventListener('controllerchange', ()=>{
+      if(refreshing) return;
+      refreshing = true;
+      window.location.reload();
+    });
+  } else {
+    if(netDot){
+      netDot.classList.add('uncached');
+      netDot.title = 'Service workers not supported — offline mode unavailable';
+    }
+  }
+})();
+</script>
+</body>
+</html>

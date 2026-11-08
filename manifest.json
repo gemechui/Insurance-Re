@@ -1,0 +1,51 @@
+{
+  "name": "Ethiopian Insurance Corporation",
+  "short_name": "EIC Renewals",
+  "description": "Track insurance policy renewals across all branches, districts and products. Works offline.",
+  "id": "/insurance-renewal-manager/",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F3F5F9",
+  "theme_color": "#1F3B8C",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["business", "productivity", "utilities"],
+  "icons": [
+    { "src": "icons/icon-192.png",           "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png",           "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png",  "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/apple-touch-icon.png",   "sizes": "180x180", "type": "image/png", "purpose": "any" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Renewal KPIs and expiries by month",
+      "url": "./index.html#dashboard",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Policy register",
+      "short_name": "Policies",
+      "description": "Search and filter all policies",
+      "url": "./index.html#policies",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Add policy",
+      "short_name": "Add",
+      "description": "Add a new policy to the register",
+      "url": "./index.html#add",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Expiry alerts",
+      "short_name": "Alerts",
+      "description": "Policies expiring within 7 days",
+      "url": "./index.html#alerts",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
